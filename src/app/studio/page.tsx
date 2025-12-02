@@ -19,6 +19,7 @@ export type Polaroid = {
     isFlipped: boolean;
     secretMessage: string;
     timestamp: number;
+    downloadTrigger?: number;
 };
 
 export default function StudioPage() {
