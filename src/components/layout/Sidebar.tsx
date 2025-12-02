@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, Home, Image, LayoutGrid } from "lucide-react";
+import { Camera, Image, LayoutGrid } from "lucide-react";
 import { clsx } from "clsx";
 
 const NAV_ITEMS = [
