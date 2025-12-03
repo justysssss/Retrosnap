@@ -31,8 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet"  />
+      </head>
       <body
-        className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} antialiased font-sans bg-[#e5e5e5] text-stone-800`}
+        className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} antialiased`}
       >
         <ClientLayout>{children}</ClientLayout>
       </body>
