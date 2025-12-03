@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
-import { Polaroid } from "@/app/studio/page";
+import { Polaroid } from "@/types/studio";
 import { RefObject, useRef, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { toPng } from "html-to-image";
