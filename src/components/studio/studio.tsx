@@ -7,20 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import CameraCapture from "@/components/studio/CameraCapture";
 import PolaroidEditor from "@/components/studio/PolaroidEditor";
 import DraggablePolaroid from "@/components/studio/DraggablePolaroid";
-
-export type Polaroid = {
-    id: string;
-    imageSrc: string;
-    x: number;
-    y: number;
-    rotation: number;
-    caption: string;
-    filter: string;
-    isFlipped: boolean;
-    secretMessage: string;
-    timestamp: number;
-    downloadTrigger?: number;
-};
+import { Polaroid } from "@/types/studio";
 
 export default function StudioPage() {
     const [polaroids, setPolaroids] = useState<Polaroid[]>([]);

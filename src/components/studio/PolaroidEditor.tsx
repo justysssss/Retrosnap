@@ -2,7 +2,7 @@
 
 import { Wand2, RotateCw, MessageSquare, Type, Download } from "lucide-react";
 import { clsx } from "clsx";
-import { Polaroid } from "@/app/studio/page";
+import { Polaroid } from "@/types/studio";
 
 interface PolaroidEditorProps {
     polaroid: Polaroid;
