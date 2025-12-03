@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Camera, ArrowRight } from "lucide-react";
+import LoginPage from "@/components/LoginPage";
 
 export default function Home() {
   return (
@@ -21,14 +20,7 @@ export default function Home() {
         {/* Call to Action */}
         <div className="relative group">
           <div className="absolute inset-0 bg-stone-800 rounded-lg transform translate-x-1 translate-y-1 transition-transform group-hover:translate-x-2 group-hover:translate-y-2" />
-          <Link
-            href="/studio"
-            className="relative flex items-center gap-3 px-8 py-4 bg-[#fdfbf7] border-2 border-stone-800 rounded-lg text-xl font-bold hover:-translate-y-1 hover:-translate-x-1 transition-transform duration-200"
-          >
-            <Camera className="w-6 h-6" />
-            <span>Enter Studio</span>
-            <ArrowRight className="w-6 h-6" />
-          </Link>
+          <LoginPage />
         </div>
 
         {/* Features Grid */}
