@@ -73,7 +73,7 @@ export default function DraggablePolaroid({
         >
             <motion.div
                 ref={polaroidRef}
-                className="w-full h-full relative shadow-xl bg-white"
+                className="w-full h-full relative shadow-xl"
                 animate={{ rotateY: polaroid.isFlipped ? 180 : 0 }}
                 transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                 style={{ transformStyle: "preserve-3d" }}

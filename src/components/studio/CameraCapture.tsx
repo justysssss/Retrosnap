@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import { motion, useDragControls, PanInfo } from "framer-motion";
 import { RefreshCw } from "lucide-react";
@@ -9,11 +9,43 @@ interface CameraCaptureProps {
     onImageCapture: (imageSrc: string) => void;
 }
 
+const CAMERA_CONFIGS: Record<string, { image: string; buttonStyle: React.CSSProperties }> = {
+    "instax-mini-8-pink": {
+        image: "/cameras/pink_camera_cut.png",
+        buttonStyle: { top: "145px", left: "60px" }
+    },
+    "instax-mini-8-purple": {
+        image: "/cameras/purple_camera.png",
+        buttonStyle: { top: "145px", left: "60px" }
+    },
+    "instax-mini-8-yellow": {
+        image: "/cameras/yellow_camera.png",
+        buttonStyle: { top: "145px", left: "60px" }
+    },
+    "old-polaroid": {
+        image: "/cameras/oldcam_cut_pic.png",
+        buttonStyle: { top: "180px", left: "30px" }
+    },
+};
+
 export default function CameraCapture({ onImageCapture }: CameraCaptureProps) {
     const webcamRef = useRef<Webcam>(null);
     const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [cameraImage, setCameraImage] = useState("/cameras/pink_camera_cut.png");
+    const [buttonStyle, setButtonStyle] = useState<React.CSSProperties>({ top: "140px", left: "70px" });
     const dragControls = useDragControls();
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const savedCamera = localStorage.getItem("preferred-camera");
+            if (savedCamera && CAMERA_CONFIGS[savedCamera]) {
+                setCameraImage(CAMERA_CONFIGS[savedCamera].image);
+                setButtonStyle(CAMERA_CONFIGS[savedCamera].buttonStyle);
+            }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, []);
 
     const capture = useCallback(() => {
         const imageSrc = webcamRef.current?.getScreenshot();
@@ -57,7 +89,7 @@ export default function CameraCapture({ onImageCapture }: CameraCaptureProps) {
                 {/* Camera Image Overlay (Front) */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src="/cameras/pink_camera_cut.png"
+                    src={cameraImage}
                     alt="Retro Camera"
                     className="relative z-20 w-full pointer-events-none drop-shadow-2xl"
                 />
@@ -76,7 +108,8 @@ export default function CameraCapture({ onImageCapture }: CameraCaptureProps) {
                 {/* Shutter Button */}
                 <button
                     onClick={capture}
-                    className="absolute top-[68px] right-14 w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition-transform z-30 shadow-lg border-4 border-red-700 flex items-center justify-center group"
+                    style={buttonStyle}
+                    className="absolute w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition-transform z-30 shadow-lg border-4 border-red-700 flex items-center justify-center group"
                     title="Take Photo"
                 >
                     <div className="w-8 h-8 rounded-full border-2 border-white/30 group-hover:border-white/50 transition-colors" />
