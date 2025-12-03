@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, Image, LayoutGrid } from "lucide-react";
+import { Camera, Image, LayoutGrid, Settings } from "lucide-react";
 import { clsx } from "clsx";
 
 const NAV_ITEMS = [
     { name: "Studio", href: "/studio", icon: Camera },
     { name: "My Board", href: "/my-board", icon: LayoutGrid },
     { name: "Public Wall", href: "/public-wall", icon: Image },
+    { name: "Settings", href: "/settings", icon: Settings },
 ]; export default function Sidebar() {
     const pathname = usePathname();
 

@@ -22,7 +22,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
         <div className="space-y-8">
             {/* Filters */}
             <div>
-                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800">
+                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800 dark:text-stone-100">
                     <Wand2 className="w-5 h-5" />
                     Filters
                 </h3>
@@ -34,8 +34,8 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                             className={clsx(
                                 "px-3 py-2 rounded-lg text-sm font-bold transition-all",
                                 polaroid.filter === filter.class
-                                    ? "bg-stone-800 text-white shadow-md transform scale-105"
-                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                                    ? "bg-stone-800 text-white shadow-md transform scale-105 dark:bg-stone-200 dark:text-stone-900"
+                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-700 dark:text-stone-300 dark:hover:bg-stone-600"
                             )}
                         >
                             {filter.name}
@@ -46,7 +46,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
 
             {/* Caption */}
             <div>
-                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800">
+                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800 dark:text-stone-100">
                     <Type className="w-5 h-5" />
                     Caption
                 </h3>
@@ -55,14 +55,14 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                     value={polaroid.caption}
                     onChange={(e) => onUpdate({ caption: e.target.value })}
                     placeholder="Write a memory..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-2xl bg-transparent"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-2xl bg-transparent dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
                     maxLength={40}
                 />
             </div>
 
             {/* Secret Message */}
             <div>
-                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800">
+                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800 dark:text-stone-100">
                     <MessageSquare className="w-5 h-5" />
                     Secret Message
                 </h3>
@@ -70,7 +70,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                     value={polaroid.secretMessage}
                     onChange={(e) => onUpdate({ secretMessage: e.target.value })}
                     placeholder="Something for the back..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[100px] resize-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[100px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
                     maxLength={100}
                 />
                 <p className="text-xs text-stone-400 mt-2 text-right">
@@ -85,8 +85,8 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                     className={clsx(
                         "w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all",
                         polaroid.isFlipped
-                            ? "bg-stone-800 text-white shadow-md"
-                            : "bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50"
+                            ? "bg-stone-800 text-white shadow-md dark:bg-stone-200 dark:text-stone-900"
+                            : "bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50 dark:bg-stone-700 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-600"
                     )}
                 >
                     <RotateCw className={clsx("w-5 h-5 transition-transform", polaroid.isFlipped && "rotate-180")} />

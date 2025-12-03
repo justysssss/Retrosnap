@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Caveat, Permanent_Marker } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import ClientLayout from "@/components/layout/ClientLayout";
 import "./globals.css";
 
@@ -30,14 +31,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet"  />
+        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet" />
       </head>
       <body
         className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} antialiased`}
       >
-        <ClientLayout>{children}</ClientLayout>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <ClientLayout>{children}</ClientLayout>
+        </ThemeProvider>
       </body>
     </html>
   );
