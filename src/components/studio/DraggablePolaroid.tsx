@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { Polaroid } from "@/app/studio/page";
-import { RefObject } from "react";
+import { RefObject, useRef, useEffect } from "react";
 import { Trash2 } from "lucide-react";
+import { toPng } from "html-to-image";
 
 interface DraggablePolaroidProps {
     polaroid: Polaroid;
@@ -23,6 +24,29 @@ export default function DraggablePolaroid({
     onDelete,
     containerRef,
 }: DraggablePolaroidProps) {
+    const polaroidRef = useRef<HTMLDivElement>(null);
+
+    const handleDownload = async () => {
+        if (polaroidRef.current) {
+            try {
+                const dataUrl = await toPng(polaroidRef.current, { quality: 0.95, pixelRatio: 2 });
+                const link = document.createElement("a");
+                link.download = `retrosnap-${polaroid.id}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (err) {
+                console.error("Failed to download polaroid", err);
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (polaroid.downloadTrigger) {
+            handleDownload();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [polaroid.downloadTrigger]);
+
     return (
         <motion.div
             drag
@@ -48,12 +72,12 @@ export default function DraggablePolaroid({
             style={{ perspective: "1000px" }}
         >
             <motion.div
+                ref={polaroidRef}
+                className="w-full h-full relative shadow-xl bg-white"
                 animate={{ rotateY: polaroid.isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.6, type: "spring" }}
+                transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                 style={{ transformStyle: "preserve-3d" }}
-                className={clsx("relative w-full h-full transition-shadow duration-300", isSelected ? "shadow-2xl ring-4 ring-yellow-400/50" : "shadow-lg")}
             >
-
                 {/* Delete Button (Visible on Hover/Select) */}
                 {isSelected && (
                     <button

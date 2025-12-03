@@ -1,6 +1,6 @@
 "use client";
 
-import { Wand2, RotateCw, MessageSquare, Type } from "lucide-react";
+import { Wand2, RotateCw, MessageSquare, Type, Download } from "lucide-react";
 import { clsx } from "clsx";
 import { Polaroid } from "@/app/studio/page";
 
@@ -79,7 +79,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
             </div>
 
             {/* Flip Control */}
-            <div>
+            <div className="space-y-3">
                 <button
                     onClick={() => onUpdate({ isFlipped: !polaroid.isFlipped })}
                     className={clsx(
@@ -91,6 +91,14 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                 >
                     <RotateCw className={clsx("w-5 h-5 transition-transform", polaroid.isFlipped && "rotate-180")} />
                     {polaroid.isFlipped ? "Show Front" : "Flip to Back"}
+                </button>
+
+                <button
+                    onClick={() => onUpdate({ downloadTrigger: Date.now() })}
+                    className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all bg-blue-500 text-white hover:bg-blue-600 shadow-md"
+                >
+                    <Download className="w-5 h-5" />
+                    Download Photo
                 </button>
             </div>
         </div>
