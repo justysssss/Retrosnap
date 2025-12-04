@@ -9,6 +9,8 @@ interface WireRowProps {
     polaroids: Polaroid[];
     rowIndex: number;
     isStaggered?: boolean;
+    wireColor?: string;
+    clipColor?: string;
 }
 
 const pseudoRandom = (seed: number) => {
@@ -16,7 +18,7 @@ const pseudoRandom = (seed: number) => {
     return x - Math.floor(x);
 };
 
-export default function WireRow({ polaroids, isStaggered }: WireRowProps) {
+export default function WireRow({ polaroids, isStaggered, wireColor = "#8b5a2b", clipColor }: WireRowProps) {
     const rotations = useMemo(() => {
         return polaroids.map((p, index) => {
             const idSum = p.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -34,7 +36,7 @@ export default function WireRow({ polaroids, isStaggered }: WireRowProps) {
                     <path
                         d="M0,0 Q500,30 1000,0"
                         fill="none"
-                        stroke="#8b5a2b"
+                        stroke={wireColor}
                         strokeWidth="3"
                         vectorEffect="non-scaling-stroke"
                         className="drop-shadow-md"
@@ -43,10 +45,11 @@ export default function WireRow({ polaroids, isStaggered }: WireRowProps) {
                     <path
                         d="M0,0 Q500,30 1000,0"
                         fill="none"
-                        stroke="#a07040"
+                        stroke={wireColor}
                         strokeWidth="1"
                         strokeDasharray="4 2"
                         vectorEffect="non-scaling-stroke"
+                        className="brightness-125"
                     />
                 </svg>
             </div>
@@ -56,14 +59,23 @@ export default function WireRow({ polaroids, isStaggered }: WireRowProps) {
                 "relative w-full h-full flex items-start pt-8",
                 isStaggered ? "justify-center gap-16 pl-32" : "justify-center gap-16 pr-32"
             )}>
-                {polaroids.map((polaroid, index) => (
-                    <div key={polaroid.id} className="relative">
-                        <HangingPolaroid
-                            polaroid={polaroid}
-                            rotation={rotations[index] || 0}
-                        />
-                    </div>
-                ))}
+                {polaroids.map((polaroid, index) => {
+                    // Deterministic random variant based on ID
+                    const idSum = polaroid.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    const variantIndex = (idSum + index) % 3;
+                    const variant = ["wood", "metal", "plastic"][variantIndex] as "wood" | "metal" | "plastic";
+
+                    return (
+                        <div key={polaroid.id} className="relative">
+                            <HangingPolaroid
+                                polaroid={polaroid}
+                                rotation={rotations[index] || 0}
+                                clipColor={clipColor}
+                                clipVariant={variant}
+                            />
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
