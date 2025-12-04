@@ -5,8 +5,9 @@ import { auth } from "./auth";
 import { v4 as uuidv4 } from "uuid";
 import { storage, UPLOAD_BUCKET_NAME } from "./storage";
 import { db } from "@/db";
-import { post, postImage } from "@/db/schema";
+import { post, postImage, reaction, user } from "@/db/schema";
 import { revalidatePath } from "next/cache";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 export async function getSignedUrl(filename: string, contentType: string) {
   const session = await auth.api.getSession({
@@ -87,5 +88,94 @@ export async function createPost(formData: {
   } catch (error) {
     console.error("Create Post Error:", error);
     return { error: "Failed to save post" };
+  }
+}
+
+
+
+
+
+export async function getGlobalFeed(limit = 20, offset = 0) {
+  try {
+    const data = await db
+      .select({
+        post: {
+          id: post.id,
+          message: post.message,
+          createdAt: post.createdAt,
+        },
+        image: {
+          id: postImage.id,
+          thumbnailUrl: postImage.thumbnailUrl,
+          fullUrl: postImage.fullUrl,
+          aspectRatio: postImage.aspectRatio,
+          width: postImage.width,
+          height: postImage.height,
+        },
+        user: {
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        },
+        reactionCount: sql<number>`count(${reaction.postId})`.mapWith(Number),
+      })
+      .from(post)
+      .innerJoin(postImage, eq(post.id, postImage.postId))
+      .innerJoin(user, eq(post.userId, user.id))
+      .leftJoin(reaction, eq(post.id, reaction.postId))
+      .where(
+        and(
+          eq(post.isPublic, true),
+          eq(postImage.status, "completed")
+        )
+      )
+      .groupBy(post.id, postImage.id, user.id)
+      .orderBy(desc(post.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    console.log(data);
+    return { success: true, data };
+
+  } catch (error) {
+    console.error("Error fetching feed:", error);
+    return { success: false, data: [] }
+  }
+}
+
+
+
+
+export async function getUserPosts(userId: string) {
+  try {
+    const data = await db
+      .select({
+        post: {
+          id: post.id,
+          message: post.message,
+          createdAt: post.createdAt,
+        },
+        image: {
+          id: postImage.id,
+          thumbnailUrl: postImage.thumbnailUrl,
+          fullUrl: postImage.fullUrl,
+          aspectRatio: postImage.aspectRatio,
+        },
+        reactionCount: sql<number>`count(${reaction.postId})`.mapWith(Number),
+      })
+      .from(post)
+      .innerJoin(postImage, eq(post.id, postImage.postId))
+      .leftJoin(reaction, eq(post.id, reaction.postId))
+      .where(and(
+        eq(post.userId, userId),
+        eq(postImage.status, "completed")
+      ))
+      .groupBy(post.id, user.id)
+      .orderBy(desc(post.createdAt));
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching user profile", error)
+    return { success: false, data: [] };
   }
 }
