@@ -1,6 +1,22 @@
 
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, integer, pgEnum, primaryKey, real } from "drizzle-orm/pg-core";
+
+export const imageStatusEnum = pgEnum("image_status", [
+  "pending", //Uploaded to Bucket 1, wating for cloud function,
+  "processing", // Cloud Function is currently resizing,
+  "completed", // Uploaded to Bucket 2, CDN URL ready,
+  "failed", // Processing error,
+])
+
+export const reactionTypeEnum = pgEnum("reaction_type", [
+  "heart",
+  "fire",
+  "cold",
+  "party",
+  "laughter",
+  "sad",
+])
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -77,6 +93,8 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  post: many(post),
+  reaction: many(reaction),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -92,3 +110,83 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const post = pgTable("post", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  message: text("messsage"),
+  secretMessage: text("secret_message"),
+  isPublic: boolean("is_public").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
+
+}, (table) => [index("post_user_idx").on(table.userId),
+index("post_created_at_idx").on(table.createdAt)]
+)
+
+export const postImage = pgTable("post_image", {
+  id: text("id").primaryKey(),
+  postId: text("post_id").notNull().references(() => post.id, { onDelete: "cascade" }),
+
+  //Bucket 1: The original upload (Private)
+  originalPath: text("original_path").notNull(),
+
+  // Public Feed URL (720px) for feed
+  thumbnailUrl: text("low_res_cdn_url"),
+
+  // Public HD URL (2048px)
+  fullUrl: text("full_url"),
+
+  aspectRatio: real("aspect_ratio"),
+
+  status: imageStatusEnum("status").default("pending").notNull(),
+  width: integer("width"),
+  height: integer("height"),
+})
+
+
+
+export const reaction = pgTable("reaction", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  postId: text("post_id").notNull().references(() => post.id, { onDelete: "cascade" }),
+
+  type: reactionTypeEnum("type").notNull(),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.userId, t.postId] }),
+  postIdx: index("reaction_post_idx").on(t.postId),
+})
+)
+
+
+
+export const postRelations = relations(post, ({ one, many }) => ({
+  user: one(user, {
+    fields: [post.userId],
+    references: [user.id],
+  }),
+  image: one(postImage, {
+    fields: [post.id],
+    references: [postImage.postId],
+  }),
+  reactions: many(reaction),
+}))
+
+export const postImageRealtions = relations(postImage, ({ one }) => ({
+  post: one(post, {
+    fields: [postImage.postId],
+    references: [post.id],
+  })
+}))
+
+export const reactionRelations = relations(reaction, ({ one }) => ({
+  user: one(user, {
+    fields: [reaction.userId],
+    references: [user.id],
+  }),
+  post: one(post, {
+    fields: [reaction.postId],
+    references: [post.id],
+  })
+}))
