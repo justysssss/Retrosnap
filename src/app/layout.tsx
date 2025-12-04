@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Caveat, Permanent_Marker } from "next/font/google";
+import { Inter, Caveat, Permanent_Marker, Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import ClientLayout from "@/components/layout/ClientLayout";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
   subsets: ["latin"],
 });
 
@@ -36,7 +42,7 @@ export default function RootLayout({
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet" crossOrigin="anonymous" />
       </head>
       <body
-        className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} antialiased`}
+        className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} ${poppins.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ClientLayout>{children}</ClientLayout>

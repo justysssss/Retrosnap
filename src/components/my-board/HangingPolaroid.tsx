@@ -8,6 +8,8 @@ import { useMemo } from "react";
 interface HangingPolaroidProps {
     polaroid: Polaroid;
     rotation: number;
+    clipColor?: string;
+    clipVariant?: "wood" | "metal" | "plastic";
 }
 
 const pseudoRandom = (seed: number) => {
@@ -15,7 +17,7 @@ const pseudoRandom = (seed: number) => {
     return x - Math.floor(x);
 };
 
-export default function HangingPolaroid({ polaroid, rotation }: HangingPolaroidProps) {
+export default function HangingPolaroid({ polaroid, rotation, clipColor = "#d4a373", clipVariant = "wood" }: HangingPolaroidProps) {
     const hoverRotation = useMemo(() => {
         const idSum = polaroid.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const random = pseudoRandom(idSum);
@@ -32,20 +34,38 @@ export default function HangingPolaroid({ polaroid, rotation }: HangingPolaroidP
                 transition: { type: "spring", stiffness: 300, damping: 15 }
             }}
         >
-            {/* The Wooden Clothespin */}
+            {/* The Clip */}
             <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-4 h-12 z-20 flex flex-col items-center">
-                {/* Left Leg */}
-                <div className="absolute left-0 top-0 w-1.5 h-10 bg-[#d4a373] rounded-sm shadow-sm transform -rotate-3 origin-bottom-left border-l border-[#b08050]" />
-                {/* Right Leg */}
-                <div className="absolute right-0 top-0 w-1.5 h-10 bg-[#d4a373] rounded-sm shadow-sm transform rotate-3 origin-bottom-right border-r border-[#b08050]" />
+                {clipVariant === "wood" && (
+                    <>
+                        {/* Left Leg */}
+                        <div className="absolute left-0 top-0 w-1.5 h-10 rounded-sm shadow-sm transform -rotate-3 origin-bottom-left border-l border-black/20" style={{ backgroundColor: clipColor }} />
+                        {/* Right Leg */}
+                        <div className="absolute right-0 top-0 w-1.5 h-10 rounded-sm shadow-sm transform rotate-3 origin-bottom-right border-r border-black/20" style={{ backgroundColor: clipColor }} />
+                        {/* Metal Spring */}
+                        <div className="absolute top-4 w-5 h-3 bg-stone-400 rounded-sm shadow-sm z-10 border-t border-stone-300 flex items-center justify-center">
+                            <div className="w-4 h-0.5 bg-stone-500/50" />
+                        </div>
+                        {/* Bottom Grip */}
+                        <div className="absolute bottom-0 w-3 h-3 rounded-b-sm shadow-md" style={{ backgroundColor: clipColor, filter: 'brightness(0.9)' }} />
+                    </>
+                )}
 
-                {/* Metal Spring */}
-                <div className="absolute top-4 w-5 h-3 bg-stone-400 rounded-sm shadow-sm z-10 border-t border-stone-300 flex items-center justify-center">
-                    <div className="w-4 h-0.5 bg-stone-500/50" />
-                </div>
+                {clipVariant === "metal" && (
+                    <div className="relative w-6 h-8 -top-2">
+                        {/* Binder Clip Body */}
+                        <div className="absolute bottom-0 w-full h-5 bg-stone-800 rounded-sm shadow-md border-t border-stone-600" />
+                        {/* Handles */}
+                        <div className="absolute -top-3 left-0.5 w-0.5 h-6 bg-stone-300 rotate-12 origin-bottom" />
+                        <div className="absolute -top-3 right-0.5 w-0.5 h-6 bg-stone-300 -rotate-12 origin-bottom" />
+                    </div>
+                )}
 
-                {/* Bottom Grip */}
-                <div className="absolute bottom-0 w-3 h-3 bg-[#c69060] rounded-b-sm shadow-md" />
+                {clipVariant === "plastic" && (
+                    <div className="relative w-5 h-8 bg-red-500 rounded-full shadow-md border-2 border-red-600 flex items-center justify-center -top-2" style={{ backgroundColor: clipColor }}>
+                        <div className="w-2 h-2 bg-white/30 rounded-full mb-4" />
+                    </div>
+                )}
             </div>
 
             {/* The Polaroid */}

@@ -6,19 +6,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'storage.googleapis.com',
-        port: '',
-        pathname: '/**'
+        protocol: 'https',
+        hostname: 'picsum.photos',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/**'
+        hostname: 'cdn-icons-png.flaticon.com',
       }
-    ]
-  }
+    ],
+  },
 };
 
 export default nextConfig;
