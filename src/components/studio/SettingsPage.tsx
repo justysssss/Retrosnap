@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Camera } from "lucide-react";
+import { Moon, Sun, Camera, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clsx } from "clsx";
+import { BoardSettings } from "@/components/my-board/types";
 
 const CAMERAS = [
     {
@@ -40,6 +41,10 @@ const CAMERAS = [
 export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
     const [selectedCamera, setSelectedCamera] = useState("instax-mini-8-pink");
+    const [boardSettings, setBoardSettings] = useState<BoardSettings>({
+        background: "cork",
+        frame: "wood-dark"
+    });
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -49,6 +54,18 @@ export default function SettingsPage() {
             if (savedCamera) {
                 setSelectedCamera(savedCamera);
             }
+
+            // Load saved board settings
+            const savedBg = localStorage.getItem("board-background") as BoardSettings["background"];
+            const savedFrame = localStorage.getItem("board-frame") as BoardSettings["frame"];
+
+            if (savedBg || savedFrame) {
+                setBoardSettings(prev => ({
+                    background: savedBg || prev.background,
+                    frame: savedFrame || prev.frame
+                }));
+            }
+
             setMounted(true);
         }, 0);
         return () => clearTimeout(timer);
@@ -57,6 +74,11 @@ export default function SettingsPage() {
     const handleCameraChange = (cameraId: string) => {
         setSelectedCamera(cameraId);
         localStorage.setItem("preferred-camera", cameraId);
+    };
+
+    const handleBoardSettingChange = (key: keyof BoardSettings, value: string) => {
+        setBoardSettings(prev => ({ ...prev, [key]: value }));
+        localStorage.setItem(`board-${key}`, value);
     };
 
     if (!mounted) return null;
@@ -146,6 +168,79 @@ export default function SettingsPage() {
                                     )}
                                 </button>
                             ))}
+                        </div>
+                    </section>
+
+                    {/* Board Customization Section */}
+                    <section className="bg-white dark:bg-stone-800 p-6 rounded-xl shadow-lg">
+                        <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-4 flex items-center gap-2">
+                            <Layout className="w-6 h-6" /> Board Customization
+                        </h2>
+                        <p className="text-stone-600 dark:text-stone-400 mb-6">
+                            Customize the look of your private corkboard.
+                        </p>
+
+                        <div className="space-y-6">
+                            {/* Background Selection */}
+                            <div>
+                                <h3 className="font-bold text-stone-700 dark:text-stone-300 mb-3">Background Material</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[
+                                        { id: "cork", name: "Classic Cork", color: "bg-[#e0c097]" },
+                                        { id: "felt-gray", name: "Gray Felt", color: "bg-stone-700" },
+                                        { id: "felt-green", name: "Green Felt", color: "bg-emerald-800" },
+                                    ].map((bg) => (
+                                        <button
+                                            key={bg.id}
+                                            onClick={() => handleBoardSettingChange("background", bg.id)}
+                                            className={clsx(
+                                                "h-24 rounded-lg border-2 transition-all relative overflow-hidden group",
+                                                boardSettings.background === bg.id
+                                                    ? "border-stone-800 ring-2 ring-stone-400 ring-offset-2 dark:ring-offset-stone-900 dark:border-stone-100"
+                                                    : "border-stone-200 hover:border-stone-400 dark:border-stone-600"
+                                            )}
+                                        >
+                                            <div className={clsx("absolute inset-0", bg.color)} />
+                                            <span className={clsx(
+                                                "absolute bottom-2 left-2 text-xs font-bold px-2 py-1 rounded",
+                                                bg.id === "cork" ? "bg-stone-800/10 text-stone-900" : "bg-white/20 text-white"
+                                            )}>
+                                                {bg.name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Frame Selection */}
+                            <div>
+                                <h3 className="font-bold text-stone-700 dark:text-stone-300 mb-3">Frame Style</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[
+                                        { id: "wood-dark", name: "Dark Wood", color: "bg-[#5c4033]" },
+                                        { id: "wood-light", name: "Light Wood", color: "bg-[#deb887]" },
+                                        { id: "metal", name: "Industrial Metal", color: "bg-stone-300" },
+                                    ].map((frame) => (
+                                        <button
+                                            key={frame.id}
+                                            onClick={() => handleBoardSettingChange("frame", frame.id)}
+                                            className={clsx(
+                                                "h-16 rounded-lg border-2 transition-all relative overflow-hidden",
+                                                boardSettings.frame === frame.id
+                                                    ? "border-stone-800 ring-2 ring-stone-400 ring-offset-2 dark:ring-offset-stone-900 dark:border-stone-100"
+                                                    : "border-stone-200 hover:border-stone-400 dark:border-stone-600"
+                                            )}
+                                        >
+                                            <div className={clsx("absolute inset-0 border-[8px]", frame.color,
+                                                frame.id === "metal" ? "border-stone-400 bg-stone-100" : "border-current bg-[#f0f0f0]"
+                                            )} />
+                                            <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-stone-800">
+                                                {frame.name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
