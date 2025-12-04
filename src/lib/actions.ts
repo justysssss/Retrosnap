@@ -134,7 +134,6 @@ export async function getGlobalFeed(limit = 20, offset = 0) {
       .limit(limit)
       .offset(offset);
 
-    console.log(data);
     return { success: true, data };
 
   } catch (error) {
