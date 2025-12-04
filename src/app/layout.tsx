@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet" />
+        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&f[]=satoshi@700&display=swap" rel="stylesheet" crossOrigin="anonymous" />
       </head>
       <body
         className={`${inter.variable} ${caveat.variable} ${permanentMarker.variable} antialiased`}
