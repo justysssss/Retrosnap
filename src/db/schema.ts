@@ -116,7 +116,7 @@ export const post = pgTable("post", {
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   message: text("messsage"),
   secretMessage: text("secret_message"),
-  isPublic: boolean("is_public").default(true).notNull(),
+  isPublic: boolean("is_public").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 
