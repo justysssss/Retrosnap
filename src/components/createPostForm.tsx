@@ -66,7 +66,11 @@ export function CreatePostForm() {
 
   return (
     <form onSubmit={handleSubmit}>
+      <label htmlFor="file-upload">
+        Choose Image File
+      </label>
       <input
+        id="file-upload" // <- New ID attribute to link with the label
         type="file"
         accept="image/*"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
