@@ -25,11 +25,15 @@ export default function DraggablePolaroid({
     containerRef,
 }: DraggablePolaroidProps) {
     const polaroidRef = useRef<HTMLDivElement>(null);
+    const frontRef = useRef<HTMLDivElement>(null);
 
     const handleDownload = async () => {
-        if (polaroidRef.current) {
+        if (frontRef.current) {
             try {
-                const dataUrl = await toPng(polaroidRef.current, { quality: 0.95, pixelRatio: 2 });
+                const dataUrl = await toPng(frontRef.current, {
+                    quality: 0.95,
+                    pixelRatio: 2,
+                });
                 const link = document.createElement("a");
                 link.download = `retrosnap-${polaroid.id}.png`;
                 link.href = dataUrl;
@@ -78,25 +82,32 @@ export default function DraggablePolaroid({
                 transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                 style={{ transformStyle: "preserve-3d" }}
             >
-                {/* Delete Button (Visible on Hover/Select) */}
+                {/* Controls (Visible on Hover/Select) */}
                 {isSelected && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete();
-                        }}
-                        className="absolute -top-3 -right-3 z-50 bg-red-500 text-white p-2 rounded-full shadow-md hover:bg-red-600 transition-colors"
-                        title="Delete Polaroid"
-                        style={{ transform: "translateZ(20px)" }} // Ensure it floats above
-                    >
-                        <Trash2 size={16} />
-                    </button>
+                    <>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete();
+                            }}
+                            className="absolute -top-3 -right-3 z-50 bg-red-500 text-white p-2 rounded-full shadow-md hover:bg-red-600 transition-colors"
+                            title="Delete Polaroid"
+                            style={{ transform: "translateZ(20px)" }} // Ensure it floats above
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </>
                 )}
 
                 {/* Front Side */}
                 <div
+                    ref={frontRef}
                     className="absolute inset-0 bg-white p-3 pb-12 flex flex-col"
-                    style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+                    style={{
+                        backfaceVisibility: "hidden",
+                        WebkitBackfaceVisibility: "hidden",
+                        transform: "rotateX(0deg) translateZ(1px)"
+                    }}
                 >
                     <div className="aspect-square bg-stone-100 overflow-hidden mb-3 relative">
                         <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] z-10 pointer-events-none" />
@@ -104,6 +115,7 @@ export default function DraggablePolaroid({
                         <img
                             src={polaroid.imageSrc}
                             alt="Polaroid"
+                            crossOrigin="anonymous"
                             className={clsx("w-full h-full object-cover", polaroid.filter)}
                         />
                     </div>
@@ -112,7 +124,7 @@ export default function DraggablePolaroid({
                             {polaroid.caption}
                         </p>
                     </div>
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-20 pointer-events-none mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-10 pointer-events-none" />
                 </div>
 
                 {/* Back Side */}
@@ -121,7 +133,7 @@ export default function DraggablePolaroid({
                     style={{
                         backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)",
+                        transform: "rotateY(180deg) translateZ(1px)",
                     }}
                 >
                     {/* Add to Public Pinboard Button (Visual Only for now) */}
