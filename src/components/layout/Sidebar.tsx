@@ -65,6 +65,7 @@ export default function Sidebar() {
                             <img
                                 src={session.user.image}
                                 alt={session.user.name || "User"}
+                                referrerPolicy="no-referrer"
                                 className="w-10 h-10 rounded-full border-2 border-stone-700 object-cover"
                             />
                         ) : (
