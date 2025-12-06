@@ -178,3 +178,59 @@ export async function getUserPosts(userId: string) {
     return { success: false, data: [] };
   }
 }
+
+export type ReactionType = "heart" | "fire" | "cold" | "party" | "laughter" | "sad";
+export async function toggleReaction(postId: string, type: ReactionType) {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+
+  const userId = session.user.id;
+
+  try {
+    // Check if reaction exists
+    const existingReaction = await db.query.reaction.findFirst({
+      where: and(
+        eq(reaction.userId, userId),
+        eq(reaction.postId, postId)
+      ),
+    });
+
+    if (existingReaction) {
+      if (existingReaction.type === type) {
+        // 1. Toggle Off (Remove)
+        await db.delete(reaction).where(
+          and(eq(reaction.userId, userId), eq(reaction.postId, postId))
+        );
+        revalidatePath("/");
+        return { success: true, action: "removed" };
+      } else {
+        // 2. Switch Reaction (Update)
+        await db.update(reaction)
+          .set({ type: type })
+          .where(
+            and(eq(reaction.userId, userId), eq(reaction.postId, postId))
+          );
+        revalidatePath("/");
+        return { success: true, action: "updated" };
+      }
+    } else {
+      // 3. Add New Reaction
+      await db.insert(reaction).values({
+        userId: userId,
+        postId: postId,
+        type: type,
+      });
+      revalidatePath("/");
+      return { success: true, action: "added" };
+    }
+
+  } catch (error) {
+    console.error("Reaction Error:", error);
+    return { error: "Failed to update reaction" };
+  }
+}

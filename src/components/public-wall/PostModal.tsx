@@ -35,12 +35,12 @@ export default function PostModal({ isOpen, onClose, post }: PostModalProps) {
         {/* Vertical layout: Large Polaroid on top, interactions below */}
         <div className="flex flex-col items-center gap-6">
           {/* Top: Large Polaroid Frame - Consistent size for all images */}
-          <div className="bg-white shadow-2xl relative w-[700px] max-w-[90vw]">
+          <div className="bg-white shadow-2xl relative w-[500px] max-w-[90vw]">
             {/* Paper Texture Overlay */}
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-10 pointer-events-none z-10" />
 
             {/* Polaroid content */}
-            <div className="p-10 pb-24">
+            <div className="p-6 pb-16">
               {/* Image Section - fixed square aspect ratio for consistency */}
               <div className="w-full aspect-square bg-stone-100 overflow-hidden relative shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] z-0">
                 <Image
@@ -54,7 +54,7 @@ export default function PostModal({ isOpen, onClose, post }: PostModalProps) {
               {/* Caption in polaroid style */}
               <div className="mt-8 flex items-center justify-center min-h-20">
                 {post.message && (
-                  <p className="text-stone-800 font-handwriting text-4xl leading-relaxed text-center line-clamp-2">
+                  <p className="text-stone-800 font-handwriting text-xl leading-relaxed text-center line-clamp-2">
                     {post.message}
                   </p>
                 )}
