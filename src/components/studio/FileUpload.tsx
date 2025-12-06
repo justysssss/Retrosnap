@@ -34,7 +34,7 @@ export default function FileUpload({ onImageSelect }: FileUploadProps) {
                     <p className="mb-2 text-lg text-stone-500 font-handwriting">
                         <span className="font-bold">Click to upload</span> or drag and drop
                     </p>
-                    <p className="text-sm text-stone-400">SVG, PNG, JPG or GIF</p>
+                    <p className="text-sm text-stone-400">SVG, PNG, JPG</p>
                 </div>
                 <input
                     id="file-upload"
