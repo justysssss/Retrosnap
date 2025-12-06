@@ -1,38 +1,38 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { getGlobalFeed } from "@/lib/actions";
+import PublicWallGrid from "@/components/public-wall/PublicWallGrid";
+import AddMemoryDialog from "@/components/public-wall/AddMemoryDialog";
 
-export default function PublicWallPage() {
+export default async function PublicWallPage() {
+    const { data: posts } = await getGlobalFeed();
+
+    // Transform data to match Post interface
+    const transformedPosts = posts?.map((item) => ({
+        id: item.post.id,
+        image: {
+            thumbnailUrl: item.image.thumbnailUrl || "",
+            fullUrl: item.image.fullUrl || undefined,
+        },
+        message: item.post.message || undefined,
+        user: {
+            name: item.user.name,
+            image: item.user.image || undefined,
+        },
+        reactionCount: item.reactionCount,
+    })) || [];
+
     return (
-        <div className="min-h-screen paper-texture p-8">
-            <div className="max-w-6xl mx-auto">
-                <header className="mb-8 flex items-center gap-4">
-                    <Link
-                        href="/"
-                        className="p-2 rounded-full hover:bg-stone-200 transition-colors"
-                    >
-                        <ArrowLeft className="w-6 h-6 text-stone-800" />
-                    </Link>
-                    <h1 className="text-4xl font-marker text-stone-800">Public Wall</h1>
-                </header>
+        <div className="min-h-screen bg-[#fdfbf7] dark:bg-stone-950 pt-20 pb-10 relative">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#333_1px,transparent_1px)] bg-size-[16px_16px] opacity-50 pointer-events-none" />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    {/* Placeholder Items */}
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div
-                            key={i}
-                            className="bg-white p-3 pb-12 shadow-lg transform hover:-translate-y-1 transition-transform duration-300 rotate-1 hover:rotate-0"
-                        >
-                            <div className="aspect-square bg-stone-100 mb-3 animate-pulse" />
-                            <div className="h-4 bg-stone-100 rounded w-3/4 mx-auto animate-pulse" />
-                        </div>
-                    ))}
+            <div className="container mx-auto px-4 relative z-10">
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-4xl font-marker text-stone-900 dark:text-stone-100">Public Wall</h1>
+
+                    <AddMemoryDialog />
                 </div>
 
-                <div className="mt-12 text-center">
-                    <p className="text-2xl font-handwriting text-stone-500">
-                        Connect with the community soon...
-                    </p>
-                </div>
+                <PublicWallGrid posts={transformedPosts} />
             </div>
         </div>
     );

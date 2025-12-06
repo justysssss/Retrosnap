@@ -86,7 +86,7 @@ export default function Sidebar() {
 
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-red-900/20 text-stone-400 hover:text-red-400 transition-all duration-200 w-full"
+                    className="flex items-center gap-4 px-4 cursor-pointer py-2 rounded-xl hover:bg-red-900/20 text-stone-400 hover:text-red-400 transition-all duration-200 w-full"
                 >
                     <LogOut className="w-6 h-6" />
                     <span className="hidden md:block font-handwriting text-xl">Logout</span>

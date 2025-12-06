@@ -40,7 +40,7 @@ export default function Header() {
           <div className="flex items-center gap-4">
             <Button
               onClick={() => setIsOpen(true)}
-              className="bg-stone-900 text-[#ffc0d3] px-6 py-2 rounded-none font-bold hover:bg-stone-800 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-stone-900"
+              className="bg-stone-900 text-[#ffc0d3] px-6 py-2 cursor-pointer rounded-none font-bold hover:bg-stone-800 transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-stone-900"
             >
               Login
             </Button>
@@ -76,7 +76,7 @@ export default function Header() {
 
             <Button
               onClick={handleSignInGoogle}
-              className="w-full bg-white border-2 border-stone-900 text-stone-900 hover:bg-stone-50 py-6 text-lg font-bold shadow-[4px_4px_0px_0px_rgba(28,25,23,1)] hover:shadow-[2px_2px_0px_0px_rgba(28,25,23,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all flex items-center justify-center gap-3 rounded-none"
+              className="w-full bg-white border-2 cursor-pointer border-stone-900 text-stone-900 hover:bg-stone-50 py-6 text-lg font-bold shadow-[4px_4px_0px_0px_rgba(28,25,23,1)] hover:shadow-[2px_2px_0px_0px_rgba(28,25,23,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all flex items-center justify-center gap-3 rounded-none"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
