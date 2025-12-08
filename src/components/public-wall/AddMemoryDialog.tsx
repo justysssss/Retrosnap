@@ -17,7 +17,7 @@ export default function AddMemoryDialog() {
                     Add Memory
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0">
+            <DialogContent className="sm:max-w-[420px] max-w-[95vw] bg-transparent border-none shadow-none p-0 max-h-[85vh] overflow-y-auto">
                 <DialogTitle className="sr-only">Create New Post</DialogTitle>
                 <CreatePostForm onSuccess={() => setOpen(false)} />
             </DialogContent>

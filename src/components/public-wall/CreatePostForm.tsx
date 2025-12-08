@@ -99,28 +99,28 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-            <h2 className="text-2xl font-bold font-marker text-stone-800">Share a Memory</h2>
+        <form onSubmit={handleSubmit} className="space-y-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-stone-200">
+            <h2 className="text-lg sm:text-xl font-bold font-marker text-stone-800">Share a Memory</h2>
 
             {!uploadMode ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     <button
                         type="button"
                         onClick={() => setUploadMode("image")}
-                        className="p-6 border-2 border-stone-200 rounded-xl hover:border-stone-400 hover:bg-stone-50 transition-all group"
+                        className="p-4 border-2 border-stone-200 rounded-lg hover:border-stone-400 hover:bg-stone-50 transition-all group"
                     >
-                        <ImageIcon className="w-12 h-12 mx-auto mb-3 text-stone-600 group-hover:text-stone-800" />
-                        <p className="font-bold text-stone-800">Upload Image</p>
-                        <p className="text-xs text-stone-500 mt-1">Auto-convert to polaroid</p>
+                        <ImageIcon className="w-8 h-8 mx-auto mb-2 text-stone-600 group-hover:text-stone-800" />
+                        <p className="font-bold text-sm text-stone-800">Upload Image</p>
+                        <p className="text-xs text-stone-500 mt-0.5">Auto-convert</p>
                     </button>
                     <button
                         type="button"
                         onClick={() => setUploadMode("polaroid")}
-                        className="p-6 border-2 border-stone-200 rounded-xl hover:border-stone-400 hover:bg-stone-50 transition-all group"
+                        className="p-4 border-2 border-stone-200 rounded-lg hover:border-stone-400 hover:bg-stone-50 transition-all group"
                     >
-                        <Camera className="w-12 h-12 mx-auto mb-3 text-stone-600 group-hover:text-stone-800" />
-                        <p className="font-bold text-stone-800">Upload Polaroid</p>
-                        <p className="text-xs text-stone-500 mt-1">Direct upload</p>
+                        <Camera className="w-8 h-8 mx-auto mb-2 text-stone-600 group-hover:text-stone-800" />
+                        <p className="font-bold text-sm text-stone-800">Upload Polaroid</p>
+                        <p className="text-xs text-stone-500 mt-0.5">Direct upload</p>
                     </button>
                 </div>
             ) : showCropper && rawImage ? (
@@ -158,45 +158,45 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                                 setImage(null);
                                 setRawImage(null);
                             }}
-                            className="text-sm text-stone-600 hover:text-stone-800 mb-3 flex items-center gap-1"
+                            className="text-xs text-stone-600 hover:text-stone-800 mb-2 flex items-center gap-1"
                         >
                             ← Change Image
                         </button>
                     </div>
 
                     <div className="relative">
-                        <Image src={image} alt="Preview" width={500} height={500} className="w-full rounded-lg border-4 border-white shadow-md aspect-square object-cover" />
+                        <Image src={image} alt="Preview" width={400} height={400} className="w-full rounded-lg border-2 border-white shadow-md aspect-square object-cover" />
                     </div>
 
                     <div>
-                        <label htmlFor="caption" className="block text-sm font-medium text-stone-700 mb-2">Caption</label>
+                        <label htmlFor="caption" className="block text-xs font-medium text-stone-700 mb-1">Caption</label>
                         <textarea
                             id="caption"
                             value={caption}
                             onChange={(e) => setCaption(e.target.value)}
-                            className="w-full p-3 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-xl text-stone-800"
+                            className="w-full p-2 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-base text-stone-800"
                             placeholder="Write something about this moment..."
-                            rows={3}
+                            rows={2}
                             maxLength={40}
                         />
-                        <p className="text-xs text-stone-400 mt-1 text-right">{caption.length}/40</p>
+                        <p className="text-xs text-stone-400 mt-0.5 text-right">{caption.length}/40</p>
                     </div>
 
                     <div>
-                        <label htmlFor="secretMessage" className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
-                            <MessageSquare className="w-4 h-4" />
-                            Secret Message (Back of Polaroid)
+                        <label htmlFor="secretMessage" className="flex items-center gap-1.5 text-xs font-medium text-stone-700 mb-1">
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            Secret Message (Back)
                         </label>
                         <textarea
                             id="secretMessage"
                             value={secretMessage}
                             onChange={(e) => setSecretMessage(e.target.value)}
-                            className="w-full p-3 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-lg text-stone-800"
+                            className="w-full p-2 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-sm text-stone-800"
                             placeholder="Write a secret message for the back..."
-                            rows={3}
+                            rows={2}
                             maxLength={100}
                         />
-                        <p className="text-xs text-stone-400 mt-1 text-right">{secretMessage.length}/100</p>
+                        <p className="text-xs text-stone-400 mt-0.5 text-right">{secretMessage.length}/100</p>
                     </div>
                 </>
             )}

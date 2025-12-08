@@ -88,8 +88,8 @@ export default function ImageCropper({ imageSrc, onCropComplete, onCancel }: Ima
     };
 
     return (
-        <div className="space-y-4">
-            <div className="bg-stone-100 rounded-lg p-4 overflow-auto max-h-[70vh]">
+        <div className="space-y-3">
+            <div className="bg-stone-100 rounded-lg p-2 sm:p-3 overflow-auto max-h-[50vh]">
                 <ReactCrop
                     crop={crop}
                     onChange={(c) => setCrop(c)}
