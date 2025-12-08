@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { auth } from "./auth";
 import { v4 as uuidv4 } from "uuid";
-import { storage, UPLOAD_BUCKET_NAME } from "./storage";
+import { PUBLIC_BUCKET_NAME, storage, UPLOAD_BUCKET_NAME } from "./storage";
 import { db } from "@/db";
 import { post, postImage, reaction, user } from "@/db/schema";
 import { revalidatePath } from "next/cache";
@@ -92,6 +92,91 @@ export async function createPost(formData: {
 }
 
 
+
+
+function getFilePathFromUrl(url: string, bucketName: string): string | null {
+  try {
+    const splitKey = `${bucketName}/`;
+    const parts = url.split(splitKey);
+    return parts.length > 1 ? parts[1] : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+
+export async function deletePost(postId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    const existingPost = await db.query.post.findFirst({
+      where: eq(post.id, postId),
+      with: {
+        image: true,
+      }
+    });
+
+    if (!existingPost) {
+      return { error: "Post not found " };
+    }
+
+    if (existingPost.userId !== session.user.id) {
+      return { error: "You do not have permission to delete this post" };
+    }
+
+    if (existingPost.image) {
+      const img = existingPost.image;
+
+      if (img.originalPath) {
+        await storage
+          .bucket(UPLOAD_BUCKET_NAME)
+          .file(img.originalPath)
+          .delete()
+          .catch((e) => console.error("Failed to delete raw file:", e));
+      }
+
+      if (img.thumbnailUrl) {
+        const thumbPath = getFilePathFromUrl(img.thumbnailUrl, PUBLIC_BUCKET_NAME);
+        if (thumbPath) {
+          await storage
+            .bucket(PUBLIC_BUCKET_NAME)
+            .file(thumbPath)
+            .delete()
+            .catch((e) => console.error("Failed to delete thumb:", e));
+        }
+      }
+
+      if (img.fullUrl) {
+        const fullPath = getFilePathFromUrl(img.fullUrl, PUBLIC_BUCKET_NAME);
+        if (fullPath) {
+          await storage
+            .bucket(PUBLIC_BUCKET_NAME)
+            .file(fullPath)
+            .delete()
+            .catch((e) => console.error("Failed to delele full url", e))
+        }
+      }
+
+    }
+
+    await db.delete(post).where(eq(post.id, postId));
+    //revalidatePath("/")
+    //revalidatePath("/feed")
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete Post Error:", error)
+    return { error: "Failed to delete Post" };
+  }
+}
+
+
 export async function getGlobalFeed(limit = 20, offset = 0) {
   try {
     const data = await db
@@ -150,6 +235,7 @@ export async function getUserPosts(userId: string) {
         post: {
           id: post.id,
           message: post.message,
+          secretMessage: post.secretMessage,
           createdAt: post.createdAt,
         },
         image: {
