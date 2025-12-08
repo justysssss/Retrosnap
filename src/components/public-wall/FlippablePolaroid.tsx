@@ -48,7 +48,7 @@ export default function FlippablePolaroid({ post, onClick }: FlippablePolaroidPr
 
     return (
         <div
-            className="cursor-pointer group relative w-full max-w-[280px] sm:w-64"
+            className="cursor-pointer group relative w-full max-w-60 sm:max-w-[256px] lg:max-w-[280px]"
             onClick={handleSingleClick}
             onDoubleClick={handleDoubleClick}
             style={{ perspective: "1000px" }}
@@ -66,7 +66,7 @@ export default function FlippablePolaroid({ post, onClick }: FlippablePolaroidPr
 
             {/* Polaroid Frame with Flip Animation */}
             <motion.div
-                className="w-64 h-80 relative"
+                className="w-full aspect-[4/5] relative"
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
                 transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                 style={{ transformStyle: "preserve-3d" }}
@@ -106,27 +106,27 @@ export default function FlippablePolaroid({ post, onClick }: FlippablePolaroidPr
 
                 {/* Back Side */}
                 <div
-                    className="absolute inset-0 bg-[#1a1a1a] p-6 flex flex-col items-center justify-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-stone-800"
+                    className="absolute inset-0 bg-[#1a1a1a] p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-stone-800"
                     style={{
                         backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
                     }}
                 >
-                    <div className="w-full h-full border-2 border-stone-700/50 border-dashed rounded-lg p-4 flex items-center justify-center">
+                    <div className="w-full max-h-[70%] border-2 border-stone-700/50 border-dashed rounded-lg p-3 flex items-center justify-center overflow-y-auto">
                         {post.secretMessage ? (
-                            <p className="text-stone-200 font-handwriting text-xl leading-relaxed wrap-break-word">
+                            <p className="text-stone-200 font-handwriting text-base sm:text-lg leading-relaxed wrap-break-word">
                                 {post.secretMessage}
                             </p>
                         ) : (
-                            <p className="text-stone-500 font-handwriting text-lg italic">
+                            <p className="text-stone-500 font-handwriting text-sm sm:text-base italic">
                                 No secret message...
                             </p>
                         )}
                     </div>
 
                     {/* Hint text */}
-                    <p className="text-stone-600 text-xs mt-3 italic">Double-click to flip back</p>
+                    <p className="text-stone-600 text-xs mt-2 italic">Double-click to flip back</p>
                 </div>
             </motion.div>
         </div>
