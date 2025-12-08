@@ -6,6 +6,7 @@ import FlippablePolaroid from "./FlippablePolaroid";
 
 interface Post {
     id: string;
+    userId: string;
     image: {
         fullUrl?: string;
         thumbnailUrl: string;
@@ -21,9 +22,10 @@ interface Post {
 
 interface PublicWallGridProps {
     posts: Post[];
+    currentUserId?: string;
 }
 
-export default function PublicWallGrid({ posts }: PublicWallGridProps) {
+export default function PublicWallGrid({ posts, currentUserId }: PublicWallGridProps) {
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
     return (
@@ -42,6 +44,7 @@ export default function PublicWallGrid({ posts }: PublicWallGridProps) {
                 isOpen={!!selectedPost}
                 onClose={() => setSelectedPost(null)}
                 post={selectedPost}
+                currentUserId={currentUserId}
             />
         </>
     );

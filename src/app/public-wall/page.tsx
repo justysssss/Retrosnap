@@ -1,13 +1,23 @@
 import { getGlobalFeed } from "@/lib/actions";
 import PublicWallGrid from "@/components/public-wall/PublicWallGrid";
 import AddMemoryDialog from "@/components/public-wall/AddMemoryDialog";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default async function PublicWallPage() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
     const { data: posts } = await getGlobalFeed();
+
+    // Debug logging
+    console.log("Current user ID:", session?.user?.id);
+    console.log("First post user ID:", posts?.[0]?.user?.id);
 
     // Transform data to match Post interface
     const transformedPosts = posts?.map((item) => ({
         id: item.post.id,
+        userId: item.user.id,
         image: {
             thumbnailUrl: item.image.thumbnailUrl || "",
             fullUrl: item.image.fullUrl || undefined,
@@ -33,7 +43,10 @@ export default async function PublicWallPage() {
                     <AddMemoryDialog />
                 </div>
 
-                <PublicWallGrid posts={transformedPosts} />
+                <PublicWallGrid
+                    posts={transformedPosts}
+                    currentUserId={session?.user?.id}
+                />
             </div>
         </div>
     );
