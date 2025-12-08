@@ -13,6 +13,7 @@ export default async function PublicWallPage() {
             fullUrl: item.image.fullUrl || undefined,
         },
         message: item.post.message || undefined,
+        secretMessage: item.post.secretMessage || undefined,
         user: {
             name: item.user.name,
             image: item.user.image || undefined,

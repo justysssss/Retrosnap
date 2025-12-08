@@ -2,35 +2,100 @@
 
 import { useState } from "react";
 import FileUpload from "../studio/FileUpload";
+import ImageCropper from "../studio/ImageCropper";
 import { Button } from "../ui/button";
-import { Loader2, Image as ImageIcon, Camera } from "lucide-react";
+import { Loader2, Image as ImageIcon, Camera, MessageSquare } from "lucide-react";
+import { createPost, getSignedUrl } from "@/lib/actions";
+import Image from "next/image";
 
 export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }) {
+    const [rawImage, setRawImage] = useState<string | null>(null);
     const [image, setImage] = useState<string | null>(null);
     const [caption, setCaption] = useState("");
+    const [secretMessage, setSecretMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadMode, setUploadMode] = useState<"image" | "polaroid" | null>(null);
+    const [showCropper, setShowCropper] = useState(false);
+
+    const handleImageSelect = (selectedImage: string) => {
+        if (uploadMode === "image") {
+            // Show cropper for image mode
+            setRawImage(selectedImage);
+            setShowCropper(true);
+        } else {
+            // Direct upload for polaroid mode
+            setImage(selectedImage);
+        }
+    };
+
+    const handleCropComplete = (croppedImage: string) => {
+        setImage(croppedImage);
+        setShowCropper(false);
+    };
+
+    const handleCropCancel = () => {
+        setRawImage(null);
+        setShowCropper(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!image) return;
 
         setIsSubmitting(true);
-        // TODO: Implement server action to save post
-        // uploadMode === "image" means auto-convert to polaroid format
-        // uploadMode === "polaroid" means direct upload (already in polaroid format)
-        console.log("Submitting post:", { image, caption, uploadMode });
 
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            // Convert base64 to blob
+            const response = await fetch(image);
+            const blob = await response.blob();
 
-        setIsSubmitting(false);
-        setImage(null);
-        setCaption("");
-        setUploadMode(null);
+            // Get signed URL
+            const signedUrlResult = await getSignedUrl(
+                `post-${Date.now()}.jpg`,
+                "image/jpeg"
+            );
 
-        // Close dialog after successful post
-        onSuccess?.();
+            if (signedUrlResult.error || !signedUrlResult.url || !signedUrlResult.filePath) {
+                throw new Error(signedUrlResult.error || "Failed to get upload URL");
+            }
+
+            // Upload to cloud storage
+            await fetch(signedUrlResult.url, {
+                method: "PUT",
+                body: blob,
+                headers: {
+                    "Content-Type": "image/jpeg",
+                },
+            });
+
+            // Create post
+            const result = await createPost({
+                message: caption,
+                secretMessage: secretMessage || undefined,
+                filePath: signedUrlResult.filePath,
+                aspectRatio: 1, // 1:1 aspect ratio
+            });
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            // Reset form
+            setImage(null);
+            setRawImage(null);
+            setCaption("");
+            setSecretMessage("");
+            setUploadMode(null);
+            setShowCropper(false);
+
+            // Close dialog after successful post
+            onSuccess?.();
+        } catch (error) {
+            console.error("Error creating post:", error);
+            alert("Failed to create post. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -58,6 +123,21 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                         <p className="text-xs text-stone-500 mt-1">Direct upload</p>
                     </button>
                 </div>
+            ) : showCropper && rawImage ? (
+                <div>
+                    <button
+                        type="button"
+                        onClick={handleCropCancel}
+                        className="text-sm text-stone-600 hover:text-stone-800 mb-3 flex items-center gap-1"
+                    >
+                        ← Cancel Crop
+                    </button>
+                    <ImageCropper
+                        imageSrc={rawImage}
+                        onCropComplete={handleCropComplete}
+                        onCancel={handleCropCancel}
+                    />
+                </div>
             ) : !image ? (
                 <div>
                     <button
@@ -67,32 +147,59 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                     >
                         ← Back
                     </button>
-                    <FileUpload onImageSelect={setImage} />
+                    <FileUpload onImageSelect={handleImageSelect} />
                 </div>
             ) : (
-                <div className="relative">
-                    <img src={image} alt="Preview" className="w-full rounded-lg border-4 border-white shadow-md" />
-                    <button
-                        type="button"
-                        onClick={() => setImage(null)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-                    >
-                        ✕
-                    </button>
-                </div>
-            )}
+                <>
+                    <div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setImage(null);
+                                setRawImage(null);
+                            }}
+                            className="text-sm text-stone-600 hover:text-stone-800 mb-3 flex items-center gap-1"
+                        >
+                            ← Change Image
+                        </button>
+                    </div>
 
-            <div>
-                <label htmlFor="caption" className="block text-sm font-medium text-stone-700 mb-2">Caption</label>
-                <textarea
-                    id="caption"
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                    className="w-full p-3 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-xl text-stone-800"
-                    placeholder="Write something about this moment..."
-                    rows={3}
-                />
-            </div>
+                    <div className="relative">
+                        <Image src={image} alt="Preview" width={500} height={500} className="w-full rounded-lg border-4 border-white shadow-md aspect-square object-cover" />
+                    </div>
+
+                    <div>
+                        <label htmlFor="caption" className="block text-sm font-medium text-stone-700 mb-2">Caption</label>
+                        <textarea
+                            id="caption"
+                            value={caption}
+                            onChange={(e) => setCaption(e.target.value)}
+                            className="w-full p-3 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-xl text-stone-800"
+                            placeholder="Write something about this moment..."
+                            rows={3}
+                            maxLength={40}
+                        />
+                        <p className="text-xs text-stone-400 mt-1 text-right">{caption.length}/40</p>
+                    </div>
+
+                    <div>
+                        <label htmlFor="secretMessage" className="flex items-center gap-2 text-sm font-medium text-stone-700 mb-2">
+                            <MessageSquare className="w-4 h-4" />
+                            Secret Message (Back of Polaroid)
+                        </label>
+                        <textarea
+                            id="secretMessage"
+                            value={secretMessage}
+                            onChange={(e) => setSecretMessage(e.target.value)}
+                            className="w-full p-3 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-lg text-stone-800"
+                            placeholder="Write a secret message for the back..."
+                            rows={3}
+                            maxLength={100}
+                        />
+                        <p className="text-xs text-stone-400 mt-1 text-right">{secretMessage.length}/100</p>
+                    </div>
+                </>
+            )}
 
             <Button
                 type="submit"

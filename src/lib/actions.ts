@@ -92,9 +92,6 @@ export async function createPost(formData: {
 }
 
 
-
-
-
 export async function getGlobalFeed(limit = 20, offset = 0) {
   try {
     const data = await db
