@@ -22,9 +22,12 @@ export function DeleteButton({ postId }: { postId: string }) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
+      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-400 hover:text-red-300 hover:bg-stone-700/50 transition-colors disabled:opacity-50"
     >
-      {isPending ? "..." : <Trash2 size={18} />}
+      <Trash2 size={16} />
+      <span className="text-sm font-medium">
+        {isPending ? "Deleting..." : "Delete Post"}
+      </span>
     </button>
   );
 }
