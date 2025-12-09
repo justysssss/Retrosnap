@@ -117,6 +117,7 @@ export const post = pgTable("post", {
   message: text("messsage"),
   secretMessage: text("secret_message"),
   isPublic: boolean("is_public").default(false).notNull(),
+  isPrivate: boolean("is_private").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 
