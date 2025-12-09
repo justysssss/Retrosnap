@@ -280,7 +280,7 @@ export async function getGlobalFeed(limit = 20, offset = 0) {
 
 
 
-export async function getPrivateFeed(limit = 20, offset = 0) {
+export async function getPrivateFeed(limit = 20, offset = 0, userId: string) {
   try {
     const data = await db
       .select({
@@ -312,7 +312,8 @@ export async function getPrivateFeed(limit = 20, offset = 0) {
       .where(
         and(
           eq(post.isPrivate, true),
-          eq(postImage.status, "completed")
+          eq(postImage.status, "completed"),
+          eq(post.userId, userId)
         )
       )
       .groupBy(post.id, postImage.id, user.id)
