@@ -231,6 +231,11 @@ export async function deletePost(postId: string) {
 
 
 export async function getGlobalFeed(limit = 20, offset = 0) {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  const currentUserId = session?.user.id;
   try {
     const data = await db
       .select({
@@ -254,6 +259,9 @@ export async function getGlobalFeed(limit = 20, offset = 0) {
           image: user.image,
         },
         reactionCount: sql<number>`count(${reaction.postId})`.mapWith(Number),
+        userReaction: sql<string | null>`
+          MAX(CASE WHEN ${reaction.userId} = ${currentUserId || null} THEN ${reaction.type} ELSE NULL END)
+        `.as("user_reaction"),
       })
       .from(post)
       .innerJoin(postImage, eq(post.id, postImage.postId))
@@ -280,7 +288,7 @@ export async function getGlobalFeed(limit = 20, offset = 0) {
 
 
 
-export async function getPrivateFeed(limit = 20, offset = 0) {
+export async function getPrivateFeed(limit = 20, offset = 0, userId: string) {
   try {
     const data = await db
       .select({
@@ -304,6 +312,10 @@ export async function getPrivateFeed(limit = 20, offset = 0) {
           image: user.image,
         },
         reactionCount: sql<number>`count(${reaction.postId})`.mapWith(Number),
+        userReaction: sql<string | null>`
+          MAX(CASE WHEN ${reaction.userId} = ${userId || null} THEN ${reaction.type} ELSE NULL END)
+        `.as("user_reaction"),
+
       })
       .from(post)
       .innerJoin(postImage, eq(post.id, postImage.postId))
@@ -312,7 +324,8 @@ export async function getPrivateFeed(limit = 20, offset = 0) {
       .where(
         and(
           eq(post.isPrivate, true),
-          eq(postImage.status, "completed")
+          eq(postImage.status, "completed"),
+          eq(post.userId, userId)
         )
       )
       .groupBy(post.id, postImage.id, user.id)
