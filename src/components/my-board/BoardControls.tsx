@@ -1,23 +1,38 @@
 "use client";
 
 import Image from "next/image";
-import { X, Sticker, Type, Save, Loader2 } from "lucide-react";
+import { X, Sticker, Type, Palette, Save, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
 import RetroButton from "@/components/ui/RetroButton";
-import { ClipVariant, DecorationType } from "@/types/board";
+import {
+  ClipVariant,
+  DecorationType,
+  BoardBackground,
+  BoardFrameType
+} from "@/types/board";
 
 interface BoardControlsProps {
   isOpen: boolean;
   onClose: () => void;
+
+  // Actions
   onAddDecoration: (type: DecorationType, src: string) => void;
+  onSave: () => void;
+  isSaving?: boolean;
+
+  // State Props
   wireColor: string;
   setWireColor: (c: string) => void;
   clipColor: string;
   setClipColor: (c: string) => void;
-  clipVariant?: ClipVariant;
-  setClipVariant?: (v: ClipVariant) => void;
-  onSave: () => void;
-  isSaving?: boolean;
+  clipVariant: ClipVariant;
+  setClipVariant: (v: ClipVariant) => void;
+
+  // New Style Props
+  background: BoardBackground;
+  setBackground: (b: BoardBackground) => void;
+  frame: BoardFrameType;
+  setFrame: (f: BoardFrameType) => void;
 }
 
 const STICKERS = [
@@ -30,17 +45,9 @@ const STICKERS = [
 ];
 
 export default function BoardControls({
-  isOpen,
-  onClose,
-  onAddDecoration,
-  wireColor,
-  setWireColor,
-  clipColor,
-  setClipColor,
-  clipVariant = "wood",
-  setClipVariant,
-  onSave,
-  isSaving = false
+  isOpen, onClose, onAddDecoration, onSave, isSaving = false,
+  wireColor, setWireColor, clipColor, setClipColor, clipVariant, setClipVariant,
+  background, setBackground, frame, setFrame
 }: BoardControlsProps) {
 
   return (
@@ -57,7 +64,57 @@ export default function BoardControls({
         </div>
 
         <div className="space-y-8">
-          {/* Stickers Section */}
+
+          {/* 1. Board Style Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
+              <Palette className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Board Style</span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Background Selector */}
+              <div>
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300 block mb-2">Background</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["cork", "white", "grid", "dots", "felt-gray", "felt-green"] as BoardBackground[]).map(bg => (
+                    <button
+                      key={bg}
+                      onClick={() => setBackground(bg)}
+                      className={clsx(
+                        "h-10 rounded border-2 transition-all text-xs font-medium capitalize",
+                        background === bg ? "border-blue-500 ring-1 ring-blue-500" : "border-stone-200"
+                      )}
+                      style={{
+                        backgroundColor: bg === 'cork' ? '#e0c097' : bg === 'felt-green' ? '#065f46' : bg === 'felt-gray' ? '#44403c' : '#ffffff'
+                      }}
+                    >
+                      {bg === background && <span className="bg-white/80 px-1 rounded text-black text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Frame Selector */}
+              <div>
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300 block mb-2">Frame</label>
+                <select
+                  value={frame}
+                  onChange={(e) => setFrame(e.target.value as BoardFrameType)}
+                  className="w-full p-2 rounded border border-stone-300 bg-stone-50 text-sm"
+                >
+                  <option value="wood-dark">Dark Wood</option>
+                  <option value="wood-light">Light Wood</option>
+                  <option value="metal">Metal</option>
+                  <option value="none">No Frame</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <hr className="border-stone-100" />
+
+          {/* 2. Stickers Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
               <Sticker className="w-4 h-4" />
@@ -76,7 +133,6 @@ export default function BoardControls({
                     ) : sticker.type === "emoji" ? (
                       <span className="text-4xl">{sticker.src}</span>
                     ) : (
-                      // @ts-ignore - dotlottie-player is a web component
                       <dotlottie-player
                         src={sticker.src}
                         background="transparent"
@@ -93,63 +149,52 @@ export default function BoardControls({
             </div>
           </div>
 
-          {/* Colors Section */}
+          <hr className="border-stone-100" />
+
+          {/* 3. Wire & Clips Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
               <Type className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">Colors</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Accents</span>
             </div>
 
             <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Wire Color</span>
-                <div className="flex items-center gap-2 relative mt-1">
-                  <div className="w-8 h-8 rounded-full border border-stone-200 shadow-sm" style={{ backgroundColor: wireColor }} />
-                  <input
-                    type="color"
-                    value={wireColor}
-                    onChange={(e) => setWireColor(e.target.value)}
-                    className="opacity-0 absolute w-8 h-8 cursor-pointer inset-0"
-                    aria-label="Choose wire color"
-                  />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Wire</span>
+                  <div className="flex items-center gap-2 relative mt-1 h-8">
+                    <div className="w-full h-full rounded border border-stone-200 shadow-sm" style={{ backgroundColor: wireColor }} />
+                    <input type="color" value={wireColor} onChange={(e) => setWireColor(e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer w-full h-full" />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Clip Color</span>
-                <div className="flex items-center gap-2 relative mt-1">
-                  <div className="w-8 h-8 rounded-full border border-stone-200 shadow-sm" style={{ backgroundColor: clipColor }} />
-                  <input
-                    type="color"
-                    value={clipColor}
-                    onChange={(e) => setClipColor(e.target.value)}
-                    className="opacity-0 absolute w-8 h-8 cursor-pointer inset-0"
-                    aria-label="Choose clip color"
-                  />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Clip</span>
+                  <div className="flex items-center gap-2 relative mt-1 h-8">
+                    <div className="w-full h-full rounded border border-stone-200 shadow-sm" style={{ backgroundColor: clipColor }} />
+                    <input type="color" value={clipColor} onChange={(e) => setClipColor(e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer w-full h-full" />
+                  </div>
                 </div>
               </div>
 
-              {/* Pin/Clip Style Selector */}
-              {setClipVariant && (
-                <div>
-                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-2 block">Pin Style</span>
-                  <div className="flex gap-2">
-                    {(["wood", "metal", "plastic"] as ClipVariant[]).map((variant) => (
-                      <button
-                        key={variant}
-                        onClick={() => setClipVariant(variant)}
-                        className={clsx(
-                          "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium capitalize",
-                          clipVariant === variant
-                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                            : "border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
-                        )}
-                      >
-                        {variant}
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <span className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-2 block">Clip Style</span>
+                <div className="flex gap-2">
+                  {(["wood", "metal", "plastic"] as ClipVariant[]).map((variant) => (
+                    <button
+                      key={variant}
+                      onClick={() => setClipVariant(variant)}
+                      className={clsx(
+                        "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium capitalize",
+                        clipVariant === variant
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                          : "border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
+                      )}
+                    >
+                      {variant}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
