@@ -1,19 +1,29 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Polaroid } from "@/types/studio";
-import BoardFrame from "./BoardFrame";
-import WireRow from "./WireRow";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Components
+import BoardFrame from "./BoardFrame";
+import WireRow from "./WireRow";
 import BoardControls from "./BoardControls";
 import DraggableDecoration from "./DraggableDecoration";
 import UploadToPrivateBoard from "./UploadToPrivateBoard";
-import { deletePost, saveBoard } from "@/lib/actions"; // Verify this path
-import { useRouter } from "next/navigation";
-import { BoardData, ClipVariant, DecorationItem, BoardBackground, BoardFrameType } from "@/types/board";
 
-// Ensure this matches what BoardFrame expects props to be
+// Actions & Types
+import { deletePost, saveBoard } from "@/lib/actions";
+import {
+  BoardData,
+  ClipVariant,
+  DecorationItem,
+  BoardBackground,
+  BoardFrameType
+} from "@/types/board";
+
+// We define this interface to match what BoardFrame expects
 export interface BoardSettings {
   background: BoardBackground;
   frame: BoardFrameType;
@@ -27,52 +37,46 @@ interface MyBoardProps {
 export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyBoardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
-  const [polaroids, setPolaroids] = useState<Polaroid[]>(initialPolaroids);
   const [mounted, setMounted] = useState(false);
 
-  // Settings State
-  const [settings, setSettings] = useState<BoardSettings>({
-    background: "cork",
-    frame: "wood-dark"
-  });
-
+  // --- State ---
+  const [polaroids, setPolaroids] = useState<Polaroid[]>(initialPolaroids);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Board Settings State (Individual states are easier to pass to controls)
+  const [background, setBackground] = useState<BoardBackground>("cork");
+  const [frame, setFrame] = useState<BoardFrameType>("wood-dark");
+
+  // Accents State
   const [wireColor, setWireColor] = useState("#8b5a2b");
   const [clipColor, setClipColor] = useState("#d4a373");
   const [clipVariant, setClipVariant] = useState<ClipVariant>("wood");
   const [decorations, setDecorations] = useState<DecorationItem[]>([]);
 
+  // 1. Sync Polaroids when server props change
   useEffect(() => {
     setPolaroids(initialPolaroids);
   }, [initialPolaroids]);
 
+  // 2. Initialize Data (DB or LocalStorage fallback)
   useEffect(() => {
     if (initialBoardData) {
-      // ⚠️ TYPE CASTING HERE IS CRITICAL
-      // We trust the DB data maps to our types. 
-      // If DB has "invalid_color", it will default to 'cork' via fallback logic if you add it, 
-      // but 'as' tells TS to trust us.
-      setSettings({
-        background: (initialBoardData.background as BoardBackground) || "cork",
-        frame: (initialBoardData.frame as BoardFrameType) || "wood-dark"
-      });
+      // Cast strict types from DB string values
+      setBackground((initialBoardData.background as BoardBackground) || "cork");
+      setFrame((initialBoardData.frame as BoardFrameType) || "wood-dark");
       setWireColor(initialBoardData.wireColor);
       setClipColor(initialBoardData.clipColor);
       setClipVariant(initialBoardData.clipVariant);
       setDecorations(initialBoardData.decorations || []);
     } else {
-      // Fallback to local storage
+      // Fallback
       const savedBg = localStorage.getItem("board-background") as BoardBackground;
       const savedFrame = localStorage.getItem("board-frame") as BoardFrameType;
-
-      setSettings(prev => ({
-        ...prev,
-        ...(savedBg ? { background: savedBg } : {}),
-        ...(savedFrame ? { frame: savedFrame } : {})
-      }));
+      if (savedBg) setBackground(savedBg);
+      if (savedFrame) setFrame(savedFrame);
     }
 
+    // Initialize DotLottie
     const scriptId = "dotlottie-player-script";
     if (!document.getElementById(scriptId)) {
       const script = document.createElement("script");
@@ -85,13 +89,14 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
     setMounted(true);
   }, [initialBoardData]);
 
+  // 3. Save Handler
   const handleSave = () => {
     startTransition(async () => {
       const currentPostOrder = polaroids.map(p => p.id);
 
       const result = await saveBoard({
-        background: settings.background,
-        frame: settings.frame,
+        background,
+        frame,
         wireColor,
         clipColor,
         clipVariant,
@@ -108,12 +113,13 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
     });
   };
 
+  // 4. Decoration Handlers
   const addDecoration = (type: "sticker" | "lottie" | "emoji", src: string) => {
     const newItem: DecorationItem = {
       id: Math.random().toString(36).substr(2, 9),
       type,
       src,
-      x: 100,
+      x: 100, // Default center-ish
       y: 100,
       scale: 1
     };
@@ -128,7 +134,9 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
     setDecorations(prev => prev.filter(item => item.id !== id));
   };
 
+  // 5. Polaroid Logic
   const handleDeletePolaroid = async (id: string) => {
+    if (!confirm("Delete this polaroid?")) return;
     try {
       const result = await deletePost(id);
       if (result.error) {
@@ -139,12 +147,7 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
       router.refresh();
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete");
     }
-  };
-
-  const handleUploadSuccess = () => {
-    router.refresh();
   };
 
   const handlePolaroidMove = (polaroidId: string, newSlotIndex: number, newRowIndex: number) => {
@@ -164,6 +167,10 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
     });
   };
 
+  const handleUploadSuccess = () => {
+    router.refresh();
+  };
+
   const rows = [];
   for (let i = 0; i < polaroids.length; i += 4) {
     rows.push(polaroids.slice(i, i + 4));
@@ -173,6 +180,7 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-8">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-marker text-stone-800 dark:text-stone-200">
           {isEditMode ? "Editing Board..." : "My Private Board"}
@@ -197,18 +205,27 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
           isOpen={isEditMode}
           onClose={() => setIsEditMode(false)}
           onAddDecoration={addDecoration}
+          onSave={handleSave}
+          isSaving={isPending}
+
+          // Style Props (Fixed: Passing these was missing before)
+          background={background}
+          setBackground={setBackground}
+          frame={frame}
+          setFrame={setFrame}
+
+          // Accent Props
           wireColor={wireColor}
           setWireColor={setWireColor}
           clipColor={clipColor}
           setClipColor={setClipColor}
           clipVariant={clipVariant}
           setClipVariant={setClipVariant}
-          onSave={handleSave}
-          isSaving={isPending}
         />
 
-
-        <BoardFrame settings={settings}>
+        {/* Board Display - We reconstruct the settings object here */}
+        <BoardFrame settings={{ background, frame }}>
+          {/* Draggable Decorations */}
           {decorations.map(item => (
             <DraggableDecoration
               key={item.id}
@@ -219,6 +236,7 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
             />
           ))}
 
+          {/* Draggable Polaroids */}
           {rows.map((rowPolaroids, index) => (
             <WireRow
               key={index}
