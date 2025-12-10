@@ -5,9 +5,10 @@ import { auth } from "./auth";
 import { v4 as uuidv4 } from "uuid";
 import { PUBLIC_BUCKET_NAME, storage, UPLOAD_BUCKET_NAME } from "./storage";
 import { db } from "@/db";
-import { post, postImage, reaction, user } from "@/db/schema";
+import { board, post, postImage, reaction, user } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { BoardData } from "@/types/board";
 
 export async function getSignedUrl(filename: string, contentType: string) {
   const session = await auth.api.getSession({
@@ -432,4 +433,70 @@ export async function toggleReaction(postId: string, type: ReactionType) {
     console.error("Reaction Error:", error);
     return { error: "Failed to update reaction" };
   }
+}
+
+
+// 2. Save Board Action
+export async function saveBoard(data: BoardData) {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+
+  const userId = session.user.id;
+
+  try {
+    await db
+      .insert(board)
+      .values({
+        id: uuidv4(),
+        userId: userId,
+        background: data.background,
+        frame: data.frame,
+        wireColor: data.wireColor,
+        clipColor: data.clipColor,
+        clipVariant: data.clipVariant,
+        decorations: data.decorations, // Typed as DecorationItem[]
+        postOrder: data.postOrder || [],
+      })
+      .onConflictDoUpdate({
+        target: board.userId,
+        set: {
+          background: data.background,
+          frame: data.frame,
+          wireColor: data.wireColor,
+          clipColor: data.clipColor,
+          clipVariant: data.clipVariant,
+          decorations: data.decorations,
+          postOrder: data.postOrder || [],
+          updatedAt: new Date(),
+        },
+      });
+
+    revalidatePath("/studio");
+    return { success: true };
+
+  } catch (error) {
+    console.error("Save Board Error:", error);
+    return { error: "Failed to save board" };
+  }
+}
+
+// 3. Get Board Action
+export async function getBoard() {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+
+  if (!session) return null;
+
+  const userBoard = await db.query.board.findFirst({
+    where: eq(board.userId, session.user.id),
+  });
+
+  // If no board exists, you might want to return null or default values
+  return userBoard;
 }
