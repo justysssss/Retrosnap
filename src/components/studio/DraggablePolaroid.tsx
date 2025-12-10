@@ -116,7 +116,8 @@ export default function DraggablePolaroid({
               src={polaroid.imageSrc}
               alt="Polaroid"
               crossOrigin="anonymous"
-              className={clsx("w-full h-full object-cover", polaroid.filter)}
+              className="w-full h-full object-cover"
+              style={{ filter: polaroid.filter }}
             />
           </div>
           <div className="flex-1 flex items-center justify-center text-center px-2">
