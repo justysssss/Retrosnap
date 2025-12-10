@@ -13,6 +13,8 @@ interface BoardControlsProps {
     setWireColor: (c: string) => void;
     clipColor: string;
     setClipColor: (c: string) => void;
+    clipVariant?: "wood" | "metal" | "plastic";
+    setClipVariant?: (v: "wood" | "metal" | "plastic") => void;
     onSave: () => void;
 }
 
@@ -33,6 +35,8 @@ export default function BoardControls({
     setWireColor,
     clipColor,
     setClipColor,
+    clipVariant = "wood",
+    setClipVariant,
     onSave
 }: BoardControlsProps) {
 
@@ -119,6 +123,48 @@ export default function BoardControls({
                                     />
                                 </div>
                             </div>
+
+                            {/* Pin/Clip Style Selector */}
+                            {setClipVariant && (
+                                <div>
+                                    <span className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-2 block">Pin Style</span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setClipVariant("wood")}
+                                            className={clsx(
+                                                "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium",
+                                                clipVariant === "wood"
+                                                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                                                    : "border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
+                                            )}
+                                        >
+                                            Wood
+                                        </button>
+                                        <button
+                                            onClick={() => setClipVariant("metal")}
+                                            className={clsx(
+                                                "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium",
+                                                clipVariant === "metal"
+                                                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                                                    : "border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
+                                            )}
+                                        >
+                                            Metal
+                                        </button>
+                                        <button
+                                            onClick={() => setClipVariant("plastic")}
+                                            className={clsx(
+                                                "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium",
+                                                clipVariant === "plastic"
+                                                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                                                    : "border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600"
+                                            )}
+                                        >
+                                            Plastic
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
