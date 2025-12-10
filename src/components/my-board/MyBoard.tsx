@@ -9,23 +9,17 @@ import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BoardControls from "./BoardControls";
 import DraggableDecoration, { DecorationItem } from "./DraggableDecoration";
+import UploadToPrivateBoard from "./UploadToPrivateBoard";
+import { deletePost } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
-// Mock data generator
-const generateMockPolaroids = (count: number): Polaroid[] => {
-    return Array.from({ length: count }).map((_, i) => ({
-        id: `mock-${i}`,
-        imageSrc: `https://picsum.photos/seed/${i + 123}/400/400`,
-        x: 0, y: 0, rotation: 0,
-        caption: `Memory #${i + 1}`,
-        filter: "none",
-        isFlipped: false,
-        secretMessage: "",
-        timestamp: Date.now(),
-    }));
-};
+interface MyBoardProps {
+    initialPolaroids?: Polaroid[];
+}
 
-export default function MyBoard() {
-    const [polaroids, setPolaroids] = useState<Polaroid[]>([]);
+export default function MyBoard({ initialPolaroids = [] }: MyBoardProps) {
+    const router = useRouter();
+    const [polaroids, setPolaroids] = useState<Polaroid[]>(initialPolaroids);
     const [settings, setSettings] = useState<BoardSettings>({
         background: "cork",
         frame: "wood-dark"
@@ -36,7 +30,13 @@ export default function MyBoard() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [wireColor, setWireColor] = useState("#8b5a2b");
     const [clipColor, setClipColor] = useState("#d4a373");
+    const [clipVariant, setClipVariant] = useState<"wood" | "metal" | "plastic">("wood");
     const [decorations, setDecorations] = useState<DecorationItem[]>([]);
+
+    useEffect(() => {
+        // Sync with server data
+        setPolaroids(initialPolaroids);
+    }, [initialPolaroids]);
 
     useEffect(() => {
         // Load settings
@@ -62,9 +62,6 @@ export default function MyBoard() {
                     ...(savedFrame && { frame: savedFrame })
                 }));
             }
-
-            // Load polaroids (mock for now)
-            setPolaroids(generateMockPolaroids(8));
         }, 0);
     }, []);
 
@@ -88,6 +85,56 @@ export default function MyBoard() {
         setDecorations(prev => prev.filter(item => item.id !== id));
     };
 
+    const handleDeletePolaroid = async (id: string) => {
+        try {
+            const result = await deletePost(id);
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+            // Optimistically remove from UI
+            setPolaroids(prev => prev.filter(p => p.id !== id));
+            // Refresh from server
+            router.refresh();
+        } catch (error) {
+            console.error("Delete failed:", error);
+            alert("Failed to delete");
+        }
+    };
+
+    const handleUploadSuccess = () => {
+        // Refresh data from server
+        router.refresh();
+    };
+
+    const handlePolaroidMove = (polaroidId: string, newSlotIndex: number, newRowIndex: number) => {
+        setPolaroids(prevPolaroids => {
+            const newGlobalIndex = newRowIndex * 4 + newSlotIndex;
+
+            // Find current index of dragged polaroid
+            const currentIndex = prevPolaroids.findIndex(p => p.id === polaroidId);
+            if (currentIndex === -1) return prevPolaroids;
+
+            // Don't move if dropping in same position
+            if (currentIndex === newGlobalIndex) return prevPolaroids;
+
+            // Create a copy of the array
+            const result = [...prevPolaroids];
+
+            // If target slot has a polaroid, swap them
+            if (result[newGlobalIndex]) {
+                // Swap positions
+                [result[currentIndex], result[newGlobalIndex]] = [result[newGlobalIndex], result[currentIndex]];
+            } else {
+                // Move to empty slot
+                const [movedItem] = result.splice(currentIndex, 1);
+                result.splice(newGlobalIndex, 0, movedItem);
+            }
+
+            return result;
+        });
+    };
+
     // Group polaroids into rows of 4
     const rows = [];
     for (let i = 0; i < polaroids.length; i += 4) {
@@ -103,6 +150,7 @@ export default function MyBoard() {
                     {isEditMode ? "Editing Board..." : "My Private Board"}
                 </h1>
                 <div className="flex gap-3">
+                    <UploadToPrivateBoard onSuccess={handleUploadSuccess} />
                     {!isEditMode && (
                         <Button
                             variant="outline"
@@ -125,6 +173,8 @@ export default function MyBoard() {
                     setWireColor={setWireColor}
                     clipColor={clipColor}
                     setClipColor={setClipColor}
+                    clipVariant={clipVariant}
+                    setClipVariant={setClipVariant}
                     onSave={() => setIsEditMode(false)}
                 />
 
@@ -148,6 +198,10 @@ export default function MyBoard() {
                             isStaggered={index % 2 !== 0}
                             wireColor={wireColor}
                             clipColor={clipColor}
+                            clipVariant={clipVariant}
+                            onDelete={isEditMode ? handleDeletePolaroid : undefined}
+                            isDraggable={isEditMode}
+                            onPolaroidMove={handlePolaroidMove}
                         />
                     ))}
                 </BoardFrame>
