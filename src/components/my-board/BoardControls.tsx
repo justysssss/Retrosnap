@@ -81,13 +81,15 @@ export default function BoardControls({
                     <button
                       key={bg}
                       onClick={() => setBackground(bg)}
+                      aria-label={`Select ${bg} background`}
                       className={clsx(
                         "h-10 rounded border-2 transition-all text-xs font-medium capitalize",
-                        background === bg ? "border-blue-500 ring-1 ring-blue-500" : "border-stone-200"
+                        background === bg ? "border-blue-500 ring-1 ring-blue-500" : "border-stone-200",
+                        bg === 'cork' && "bg-[#e0c097]",
+                        bg === 'felt-green' && "bg-emerald-800",
+                        bg === 'felt-gray' && "bg-stone-700",
+                        bg === 'white' && "bg-white"
                       )}
-                      style={{
-                        backgroundColor: bg === 'cork' ? '#e0c097' : bg === 'felt-green' ? '#065f46' : bg === 'felt-gray' ? '#44403c' : '#ffffff'
-                      }}
                     >
                       {bg === background && <span className="bg-white/80 px-1 rounded text-black text-[10px]">✓</span>}
                     </button>
@@ -101,6 +103,7 @@ export default function BoardControls({
                 <select
                   value={frame}
                   onChange={(e) => setFrame(e.target.value as BoardFrameType)}
+                  aria-label="Select frame style"
                   className="w-full p-2 rounded border border-stone-300 bg-stone-50 text-sm"
                 >
                   <option value="wood-dark">Dark Wood</option>
@@ -161,17 +164,35 @@ export default function BoardControls({
             <div className="space-y-3">
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Wire</span>
-                  <div className="flex items-center gap-2 relative mt-1 h-8">
+                  <label htmlFor="wire-color" className="text-sm font-medium text-stone-700 dark:text-stone-300">Wire</label>
+                  <div className="relative mt-1 h-8">
+                    {/* eslint-disable-next-line react/forbid-dom-props */}
                     <div className="w-full h-full rounded border border-stone-200 shadow-sm" style={{ backgroundColor: wireColor }} />
-                    <input type="color" value={wireColor} onChange={(e) => setWireColor(e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer w-full h-full" />
+                    <input
+                      id="wire-color"
+                      type="color"
+                      value={wireColor}
+                      onChange={(e) => setWireColor(e.target.value)}
+                      aria-label="Select wire color"
+                      title="Wire color picker"
+                      className="opacity-0 absolute inset-0 cursor-pointer w-full h-full"
+                    />
                   </div>
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">Clip</span>
-                  <div className="flex items-center gap-2 relative mt-1 h-8">
+                  <label htmlFor="clip-color" className="text-sm font-medium text-stone-700 dark:text-stone-300">Clip</label>
+                  <div className="relative mt-1 h-8">
+                    {/* eslint-disable-next-line react/forbid-dom-props */}
                     <div className="w-full h-full rounded border border-stone-200 shadow-sm" style={{ backgroundColor: clipColor }} />
-                    <input type="color" value={clipColor} onChange={(e) => setClipColor(e.target.value)} className="opacity-0 absolute inset-0 cursor-pointer w-full h-full" />
+                    <input
+                      id="clip-color"
+                      type="color"
+                      value={clipColor}
+                      onChange={(e) => setClipColor(e.target.value)}
+                      aria-label="Select clip color"
+                      title="Clip color picker"
+                      className="opacity-0 absolute inset-0 cursor-pointer w-full h-full"
+                    />
                   </div>
                 </div>
               </div>
