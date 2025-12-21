@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, Camera as CameraIcon, X, Wand2, Type, MessageSquare, RotateCw } from "lucide-react";
+import { Upload, Camera as CameraIcon, X, Wand2, Type, MessageSquare, RotateCw, Download } from "lucide-react";
 import { clsx } from "clsx";
 import { v4 as uuidv4 } from 'uuid';
 import CameraCapture from "@/components/studio/CameraCapture";
@@ -12,7 +12,7 @@ import FilterSelector from "@/components/studio/FilterSelector";
 import { Polaroid } from "@/types/studio";
 import { getFilterById, PHOTO_FILTERS } from "@/lib/photoFilters";
 
-type MobileTab = 'filters' | 'caption' | 'message' | 'flip' | null;
+type MobileTab = 'filters' | 'text' | null;
 
 export default function StudioPage() {
     const [polaroids, setPolaroids] = useState<Polaroid[]>([]);
@@ -216,13 +216,6 @@ export default function StudioPage() {
 
             {/* Main Board Area - Adjust padding for mobile bottom toolbar */}
             <div className="w-full h-full min-h-screen relative pb-0 md:pb-0">
-                <style jsx>{`
-                    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-                        .safe-area-pb {
-                            padding-bottom: env(safe-area-inset-bottom);
-                        }
-                    }
-                `}</style>
                 {polaroids.map((polaroid) => (
                     <DraggablePolaroid
                         key={polaroid.id}
@@ -246,7 +239,7 @@ export default function StudioPage() {
 
             {/* Camera Overlay - Responsive positioning */}
             {isCameraOpen && (
-                <div className="fixed bottom-4 left-4 md:bottom-12 md:left-28 lg:left-96 z-[60] pointer-events-none origin-bottom-left transform scale-75 sm:scale-90 md:scale-110 lg:scale-125">
+                <div className="fixed bottom-4 left-4 md:bottom-12 md:left-28 lg:left-96 z-60 pointer-events-none origin-bottom-left transform scale-75 sm:scale-90 md:scale-110 lg:scale-125">
                     <div className="relative pointer-events-auto">
                         <button
                             onClick={() => setIsCameraOpen(false)}
@@ -292,13 +285,13 @@ export default function StudioPage() {
                 <>
                     {/* Bottom Action Bar - Canva Style */}
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700 z-[60] safe-area-pb">
-                        <div className="flex items-center justify-around p-2">
+                        <div className="grid grid-cols-4 gap-1 p-2">
                             <button
                                 onClick={() => setMobileActiveTab(mobileActiveTab === 'filters' ? null : 'filters')}
                                 className={clsx(
-                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px]",
-                                    mobileActiveTab === 'filters'
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
+                                    mobileActiveTab === 'filters' 
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
@@ -307,29 +300,16 @@ export default function StudioPage() {
                             </button>
 
                             <button
-                                onClick={() => setMobileActiveTab(mobileActiveTab === 'caption' ? null : 'caption')}
+                                onClick={() => setMobileActiveTab(mobileActiveTab === 'text' ? null : 'text')}
                                 className={clsx(
-                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px]",
-                                    mobileActiveTab === 'caption'
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
+                                    mobileActiveTab === 'text' 
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
                                 <Type className="w-5 h-5" />
-                                <span className="text-xs font-medium">Caption</span>
-                            </button>
-
-                            <button
-                                onClick={() => setMobileActiveTab(mobileActiveTab === 'message' ? null : 'message')}
-                                className={clsx(
-                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px]",
-                                    mobileActiveTab === 'message'
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                        : "text-stone-600 dark:text-stone-400"
-                                )}
-                            >
-                                <MessageSquare className="w-5 h-5" />
-                                <span className="text-xs font-medium">Message</span>
+                                <span className="text-xs font-medium">Text</span>
                             </button>
 
                             <button
@@ -337,9 +317,9 @@ export default function StudioPage() {
                                     updatePolaroid(selectedPolaroid.id, { isFlipped: !selectedPolaroid.isFlipped });
                                 }}
                                 className={clsx(
-                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px]",
-                                    selectedPolaroid.isFlipped
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                    "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
+                                    selectedPolaroid.isFlipped 
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
@@ -348,20 +328,18 @@ export default function StudioPage() {
                             </button>
 
                             <button
-                                onClick={() => setSelectedPolaroidId(null)}
-                                className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px] text-stone-600 dark:text-stone-400"
+                                onClick={() => updatePolaroid(selectedPolaroid.id, { downloadTrigger: Date.now() })}
+                                className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-stone-600 dark:text-stone-400"
                             >
-                                <X className="w-5 h-5" />
-                                <span className="text-xs font-medium">Close</span>
+                                <Download className="w-5 h-5" />
+                                <span className="text-xs font-medium">Save</span>
                             </button>
                         </div>
-                    </div>
-
-                    {/* Mobile/Tablet Content Modal - Slides up when tab active */}
+                    </div>                    {/* Mobile/Tablet Content Modal - Slides up when tab active */}
                     {mobileActiveTab && (
                         <div className="lg:hidden fixed inset-0 bg-black/50 z-[70] flex items-end" onClick={() => setMobileActiveTab(null)}>
                             <div
-                                className="bg-white dark:bg-stone-800 rounded-t-3xl w-full max-h-[70vh] overflow-y-auto p-4 pb-20 relative z-[71]"
+                                className="bg-white dark:bg-stone-800 rounded-t-3xl w-full max-h-[70vh] overflow-y-auto p-4 pb-6 relative z-[71]"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Drag Handle */}
@@ -376,37 +354,59 @@ export default function StudioPage() {
                                             onFilterSelect={handleFilterSelect}
                                             showCategories={true}
                                         />
+                                        <div className="flex gap-2 mt-4">
+                                            <button
+                                                onClick={() => setMobileActiveTab(null)}
+                                                className="flex-1 py-3 rounded-lg font-bold bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900"
+                                            >
+                                                Done
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 
-                                {mobileActiveTab === 'caption' && (
-                                    <div>
-                                        <h3 className="text-lg font-marker mb-4 text-stone-800 dark:text-stone-100">Add Caption</h3>
-                                        <input
-                                            type="text"
-                                            value={selectedPolaroid.caption}
-                                            onChange={(e) => updatePolaroid(selectedPolaroid.id, { caption: e.target.value })}
-                                            placeholder="Write a memory..."
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
-                                            maxLength={40}
-                                            autoFocus
-                                        />
-                                        <p className="text-xs text-stone-400 mt-2 text-right">{selectedPolaroid.caption.length}/40</p>
-                                    </div>
-                                )}
+                                {mobileActiveTab === 'text' && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h3 className="text-lg font-marker mb-3 text-stone-800 dark:text-stone-100">Caption</h3>
+                                            <input
+                                                type="text"
+                                                value={selectedPolaroid.caption}
+                                                onChange={(e) => updatePolaroid(selectedPolaroid.id, { caption: e.target.value })}
+                                                placeholder="Write a memory..."
+                                                className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-lg bg-transparent dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
+                                                maxLength={40}
+                                                autoFocus
+                                            />
+                                            <p className="text-xs text-stone-400 mt-2 text-right">{selectedPolaroid.caption.length}/40</p>
+                                        </div>
 
-                                {mobileActiveTab === 'message' && (
-                                    <div>
-                                        <h3 className="text-lg font-marker mb-4 text-stone-800 dark:text-stone-100">Secret Message</h3>
-                                        <textarea
-                                            value={selectedPolaroid.secretMessage}
-                                            onChange={(e) => updatePolaroid(selectedPolaroid.id, { secretMessage: e.target.value })}
-                                            placeholder="Something for the back..."
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-lg bg-transparent min-h-[120px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
-                                            maxLength={100}
-                                            autoFocus
-                                        />
-                                        <p className="text-xs text-stone-400 mt-2 text-right">{selectedPolaroid.secretMessage.length}/100</p>
+                                        <div>
+                                            <h3 className="text-lg font-marker mb-3 text-stone-800 dark:text-stone-100">Secret Message</h3>
+                                            <textarea
+                                                value={selectedPolaroid.secretMessage}
+                                                onChange={(e) => updatePolaroid(selectedPolaroid.id, { secretMessage: e.target.value })}
+                                                placeholder="Something for the back..."
+                                                className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-lg bg-transparent min-h-[80px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
+                                                maxLength={100}
+                                            />
+                                            <p className="text-xs text-stone-400 mt-2 text-right">{selectedPolaroid.secretMessage.length}/100</p>
+                                        </div>
+
+                                        <div className="flex gap-2 pt-2">
+                                            <button
+                                                onClick={() => setMobileActiveTab(null)}
+                                                className="flex-1 py-3 rounded-lg font-bold border-2 border-stone-200 dark:border-stone-600 text-stone-600 dark:text-stone-300"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={() => setMobileActiveTab(null)}
+                                                className="flex-1 py-3 rounded-lg font-bold bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900"
+                                            >
+                                                OK
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>

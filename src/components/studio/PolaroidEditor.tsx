@@ -62,7 +62,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                     value={polaroid.secretMessage}
                     onChange={(e) => onUpdate({ secretMessage: e.target.value })}
                     placeholder="Something for the back..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[60px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[80px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
                     maxLength={100}
                 />
                 <p className="text-xs text-stone-400 mt-2 text-right">

@@ -127,3 +127,10 @@
   background-image: radial-gradient(#ffffff 2px, transparent 2px);
   background-size: 30px 30px;
 }
+
+/* Safe area inset for mobile devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
