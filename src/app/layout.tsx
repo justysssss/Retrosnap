@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Caveat, Permanent_Marker, Poppins } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "next-themes";
 import ClientLayout from "@/components/layout/ClientLayout";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ClientLayout>{children}</ClientLayout>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
