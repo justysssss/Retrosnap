@@ -47,6 +47,8 @@ export async function createPost(formData: {
   secretMessage?: string,
   filePath: string,
   aspectRatio: number;
+  instagramUrl?: string;
+  twitterUrl?: string;
 }) {
   const session = await auth.api.getSession({
     headers: await headers()
@@ -56,9 +58,19 @@ export async function createPost(formData: {
     return { error: "Unauthorized" };
   }
   const { message, secretMessage, filePath, aspectRatio } = formData;
+  const instagramUrl = formData.instagramUrl?.trim();
+  const twitterUrl = formData.twitterUrl?.trim();
 
   if (!filePath) {
     return { error: "Image is required" };
+  }
+
+  if (instagramUrl && !/^https?:\/\/(www\.)?instagram\.com\/.*$/.test(instagramUrl)) {
+    return { error: "Invalid Instagram URL" };
+  }
+
+  if (twitterUrl && !/^https?:\/\/(www\.)?(twitter|x)\.com\/.*$/.test(twitterUrl)) {
+    return { error: "Invalid Twitter/X URL" };
   }
 
   try {
@@ -70,6 +82,8 @@ export async function createPost(formData: {
         userId: session.user.id,
         message: message,
         secretMessage: secretMessage,
+        instagramUrl: instagramUrl || null,
+        twitterUrl: twitterUrl || null,
         isPublic: true,
         isPrivate: false,
       });
