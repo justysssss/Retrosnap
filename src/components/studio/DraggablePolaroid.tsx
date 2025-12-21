@@ -137,10 +137,23 @@ export default function DraggablePolaroid({
             transform: "rotateY(180deg) translateZ(1px)",
           }}
         >
-          {/* Add to Public Pinboard Button (Visual Only for now) */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full shadow-md transform -rotate-2 whitespace-nowrap z-20">
+          {/* Add to Public Pinboard Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const polaroidData = {
+                imageSrc: polaroid.imageSrc,
+                caption: polaroid.caption,
+                secretMessage: polaroid.secretMessage,
+                filter: polaroid.filter
+              };
+              sessionStorage.setItem('studioPolaroid', JSON.stringify(polaroidData));
+              window.location.href = '/public-wall?from=studio';
+            }}
+            className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full shadow-md transform -rotate-2 whitespace-nowrap z-20 hover:bg-red-700 transition-colors cursor-pointer"
+          >
             <span className="font-marker text-sm">Add to Public Pinboard</span>
-          </div>
+          </button>
 
           <div className="w-full h-full border-2 border-stone-700/50 border-dashed rounded-lg p-4 flex items-center justify-center relative">
             <textarea

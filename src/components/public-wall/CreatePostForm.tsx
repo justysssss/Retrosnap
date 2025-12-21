@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FileUpload from "../studio/FileUpload";
 import ImageCropper from "../studio/ImageCropper";
 import { Button } from "../ui/button";
@@ -16,6 +16,27 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadMode, setUploadMode] = useState<"image" | "polaroid" | null>(null);
     const [showCropper, setShowCropper] = useState(false);
+    const [appliedFilter, setAppliedFilter] = useState<string | null>(null);
+
+    // Check for polaroid from studio
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('from') === 'studio') {
+            const polaroidData = sessionStorage.getItem('studioPolaroid');
+            if (polaroidData) {
+                const data = JSON.parse(polaroidData);
+                setImage(data.imageSrc);
+                setCaption(data.caption || "");
+                setSecretMessage(data.secretMessage || "");
+                setAppliedFilter(data.filter || null);
+                setUploadMode("polaroid");
+                // Clear the session storage
+                sessionStorage.removeItem('studioPolaroid');
+                // Clean up URL
+                window.history.replaceState({}, '', '/public-wall');
+            }
+        }
+    }, []);
 
     const handleImageSelect = (selectedImage: string) => {
         if (uploadMode === "image") {
@@ -165,7 +186,14 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                     </div>
 
                     <div className="relative">
-                        <Image src={image} alt="Preview" width={400} height={400} className="w-full rounded-lg border-2 border-white shadow-md aspect-square object-cover" />
+                        <Image 
+                            src={image} 
+                            alt="Preview" 
+                            width={400} 
+                            height={400} 
+                            className="w-full rounded-lg border-2 border-white shadow-md aspect-square object-cover" 
+                            style={appliedFilter ? { filter: appliedFilter } : undefined}
+                        />
                     </div>
 
                     <div>
