@@ -184,9 +184,32 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 lg:p-8">
+      {/* Board Controls Panel - Outside main container for proper fixed positioning */}
+      <BoardControls
+        isOpen={isEditMode}
+        onClose={() => setIsEditMode(false)}
+        onAddDecoration={addDecoration}
+        onSave={handleSave}
+        isSaving={isPending}
+
+        // Style Props
+        background={background}
+        setBackground={setBackground}
+        frame={frame}
+        setFrame={setFrame}
+
+        // Accent Props
+        wireColor={wireColor}
+        setWireColor={setWireColor}
+        clipColor={clipColor}
+        setClipColor={setClipColor}
+        clipVariant={clipVariant}
+        setClipVariant={setClipVariant}
+      />
+
       {/* Header */}
       <div className="mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-marker text-stone-800 dark:text-stone-200">
             {isEditMode ? "Editing Board..." : "My Private Board"}
           </h1>
@@ -197,10 +220,10 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
                 variant="outline"
                 size="sm"
                 onClick={() => setIsEditMode(true)}
-                className="gap-1 md:gap-2 px-2 md:px-3"
+                className="gap-2 px-3"
               >
                 <Settings size={16} />
-                <span className="hidden md:inline">Edit Board</span>
+                Edit Board
               </Button>
             )}
           </div>
@@ -208,28 +231,6 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
       </div>
 
       <div className="relative">
-        <BoardControls
-          isOpen={isEditMode}
-          onClose={() => setIsEditMode(false)}
-          onAddDecoration={addDecoration}
-          onSave={handleSave}
-          isSaving={isPending}
-
-          // Style Props (Fixed: Passing these was missing before)
-          background={background}
-          setBackground={setBackground}
-          frame={frame}
-          setFrame={setFrame}
-
-          // Accent Props
-          wireColor={wireColor}
-          setWireColor={setWireColor}
-          clipColor={clipColor}
-          setClipColor={setClipColor}
-          clipVariant={clipVariant}
-          setClipVariant={setClipVariant}
-        />
-
         {/* Board Display - same desktop proportions, auto-scaled on smaller screens, centered */}
         <div className="w-full overflow-x-hidden flex justify-start lg:justify-center">
           <div className="w-full max-w-[1400px] origin-top-left lg:origin-top transform scale-[0.28] sm:scale-[0.42] md:scale-[0.55] lg:scale-100 transition-transform">
