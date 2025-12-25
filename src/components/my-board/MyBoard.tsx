@@ -185,23 +185,25 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
   return (
     <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 lg:p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-marker text-stone-800 dark:text-stone-200">
-          {isEditMode ? "Editing Board..." : "My Private Board"}
-        </h1>
-        <div className="flex gap-2 sm:gap-3">
-          <UploadToPrivateBoard onSuccess={handleUploadSuccess} />
-          {!isEditMode && (
-            <Button
-              variant="outline"
-              onClick={() => setIsEditMode(true)}
-              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
-            >
-              <Settings size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <span className="hidden sm:inline">Edit Board</span>
-              <span className="sm:hidden">Edit</span>
-            </Button>
-          )}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-marker text-stone-800 dark:text-stone-200">
+            {isEditMode ? "Editing Board..." : "My Private Board"}
+          </h1>
+          <div className="flex gap-2 shrink-0">
+            <UploadToPrivateBoard onSuccess={handleUploadSuccess} />
+            {!isEditMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditMode(true)}
+                className="gap-1 md:gap-2 px-2 md:px-3"
+              >
+                <Settings size={16} />
+                <span className="hidden md:inline">Edit Board</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
