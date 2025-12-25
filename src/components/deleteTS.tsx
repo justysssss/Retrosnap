@@ -3,9 +3,11 @@
 import { deletePost } from "@/lib/actions";
 import { Trash2 } from "lucide-react";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export function DeleteButton({ postId }: { postId: string }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleDelete = () => {
     if (!confirm("Are you sure you want to delete this post?")) return;
@@ -14,6 +16,8 @@ export function DeleteButton({ postId }: { postId: string }) {
       const result = await deletePost(postId);
       if (result.error) {
         alert(result.error);
+      } else {
+        router.refresh();
       }
     });
   };

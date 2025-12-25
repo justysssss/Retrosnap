@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -8,6 +9,15 @@ import CreatePostForm from "./CreatePostForm";
 
 export default function AddMemoryDialog() {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('from') === 'studio') {
+            // Use setTimeout to avoid synchronous state update warning
+            setTimeout(() => setOpen(true), 0);
+        }
+    }, []);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -19,7 +29,10 @@ export default function AddMemoryDialog() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[420px] max-w-[95vw] bg-transparent border-none shadow-none p-0 max-h-[85vh] overflow-y-auto">
                 <DialogTitle className="sr-only">Create New Post</DialogTitle>
-                <CreatePostForm onSuccess={() => setOpen(false)} />
+                <CreatePostForm onSuccess={() => {
+                    setOpen(false);
+                    router.refresh();
+                }} />
             </DialogContent>
         </Dialog>
     );
