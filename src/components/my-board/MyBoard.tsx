@@ -183,22 +183,23 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
   if (!mounted) return null;
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-8">
+    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 lg:p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-marker text-stone-800 dark:text-stone-200">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-marker text-stone-800 dark:text-stone-200">
           {isEditMode ? "Editing Board..." : "My Private Board"}
         </h1>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <UploadToPrivateBoard onSuccess={handleUploadSuccess} />
           {!isEditMode && (
             <Button
               variant="outline"
               onClick={() => setIsEditMode(true)}
-              className="gap-2"
+              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Settings size={18} />
-              Edit Board
+              <Settings size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Edit Board</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           )}
         </div>
@@ -227,35 +228,39 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
           setClipVariant={setClipVariant}
         />
 
-        {/* Board Display - We reconstruct the settings object here */}
-        <BoardFrame settings={{ background, frame }}>
-          {/* Draggable Decorations */}
-          {decorations.map(item => (
-            <DraggableDecoration
-              key={item.id}
-              item={item}
-              isEditMode={isEditMode}
-              onUpdate={updateDecoration}
-              onDelete={deleteDecoration}
-            />
-          ))}
+        {/* Board Display - same desktop proportions, auto-scaled on smaller screens, centered */}
+        <div className="w-full overflow-x-hidden flex justify-start lg:justify-center">
+          <div className="w-full max-w-[1400px] origin-top-left lg:origin-top transform scale-[0.28] sm:scale-[0.42] md:scale-[0.55] lg:scale-100 transition-transform">
+            <BoardFrame settings={{ background, frame }}>
+              {/* Draggable Decorations */}
+              {decorations.map(item => (
+                <DraggableDecoration
+                  key={item.id}
+                  item={item}
+                  isEditMode={isEditMode}
+                  onUpdate={updateDecoration}
+                  onDelete={deleteDecoration}
+                />
+              ))}
 
-          {/* Draggable Polaroids */}
-          {rows.map((rowPolaroids, index) => (
-            <WireRow
-              key={index}
-              polaroids={rowPolaroids}
-              rowIndex={index}
-              isStaggered={index % 2 !== 0}
-              wireColor={wireColor}
-              clipColor={clipColor}
-              clipVariant={clipVariant}
-              onDelete={isEditMode ? handleDeletePolaroid : undefined}
-              isDraggable={isEditMode}
-              onPolaroidMove={handlePolaroidMove}
-            />
-          ))}
-        </BoardFrame>
+              {/* Draggable Polaroids */}
+              {rows.map((rowPolaroids, index) => (
+                <WireRow
+                  key={index}
+                  polaroids={rowPolaroids}
+                  rowIndex={index}
+                  isStaggered={index % 2 !== 0}
+                  wireColor={wireColor}
+                  clipColor={clipColor}
+                  clipVariant={clipVariant}
+                  onDelete={isEditMode ? handleDeletePolaroid : undefined}
+                  isDraggable={isEditMode}
+                  onPolaroidMove={handlePolaroidMove}
+                />
+              ))}
+            </BoardFrame>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -29,13 +29,13 @@ export default function Sidebar() {
     };
 
     return (
-        <aside className="fixed left-0 top-0 h-full w-20 md:w-64 bg-stone-900 text-stone-100 flex flex-col z-50 shadow-2xl transition-all duration-300">
+        <aside className="fixed left-0 top-0 h-full w-20 lg:w-64 bg-stone-900 text-stone-100 flex flex-col z-50 shadow-2xl transition-all duration-300">
             <Link href="/" className="p-6 flex items-center gap-3 border-b border-stone-800 hover:bg-stone-800 transition-colors">
                 <div className="w-8 h-8 bg-yellow-400 rounded-full animate-pulse" />
-                <span className="font-marker text-2xl hidden md:block">RetroSnap</span>
+                <span className="font-marker text-2xl hidden lg:block">RetroSnap</span>
             </Link>
 
-            <nav className="flex-1 py-8 space-y-2 px-2 md:px-4">
+            <nav className="flex-1 py-8 space-y-2 px-2 lg:px-4">
                 {NAV_ITEMS.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -50,7 +50,7 @@ export default function Sidebar() {
                             )}
                         >
                             <item.icon className={clsx("w-6 h-6", isActive && "animate-bounce")} />
-                            <span className="hidden md:block font-handwriting text-xl">
+                            <span className="hidden lg:block font-handwriting text-xl">
                                 {item.name}
                             </span>
                         </Link>
@@ -60,7 +60,7 @@ export default function Sidebar() {
 
             <div className="p-4 border-t border-stone-800 flex flex-col gap-4">
                 {session?.user && (
-                    <div className="flex items-center gap-3 px-2 hidden md:flex">
+                    <div className="hidden lg:flex items-center gap-3 px-2">
                         {session.user.image ? (
                             <img
                                 src={session.user.image}
@@ -89,10 +89,10 @@ export default function Sidebar() {
                     className="flex items-center gap-4 px-4 cursor-pointer py-2 rounded-xl hover:bg-red-900/20 text-stone-400 hover:text-red-400 transition-all duration-200 w-full"
                 >
                     <LogOut className="w-6 h-6" />
-                    <span className="hidden md:block font-handwriting text-xl">Logout</span>
+                    <span className="hidden lg:block font-handwriting text-xl">Logout</span>
                 </button>
 
-                <p className="text-xs text-stone-500 text-center font-mono hidden md:block">
+                <p className="text-xs text-stone-500 text-center font-mono hidden lg:block">
                     v1.0.0 • Beta
                 </p>
             </div>
