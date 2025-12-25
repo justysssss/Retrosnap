@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, Camera as CameraIcon, X, Wand2, Type, MessageSquare, RotateCw, Download } from "lucide-react";
 import { clsx } from "clsx";
 import { v4 as uuidv4 } from 'uuid';
 import CameraCapture from "@/components/studio/CameraCapture";
+import MobileCamera from "@/components/studio/MobileCamera";
 import PolaroidEditor from "@/components/studio/PolaroidEditor";
 import DraggablePolaroid from "@/components/studio/DraggablePolaroid";
 import ImageCropper from "@/components/studio/ImageCropper";
@@ -22,8 +23,16 @@ export default function StudioPage() {
     const [rawImage, setRawImage] = useState<string | null>(null);
     const [showCropper, setShowCropper] = useState(false);
     const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>(null);
+    const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleImageCapture = (src: string) => {
         const newId = uuidv4();
@@ -239,18 +248,26 @@ export default function StudioPage() {
 
             {/* Camera Overlay - Responsive positioning */}
             {isCameraOpen && (
-                <div className="fixed bottom-4 left-4 md:bottom-12 md:left-28 lg:left-96 z-60 pointer-events-none origin-bottom-left transform scale-75 sm:scale-90 md:scale-110 lg:scale-125">
-                    <div className="relative pointer-events-auto">
-                        <button
-                            onClick={() => setIsCameraOpen(false)}
-                            className="absolute -top-2 -right-2 md:-top-4 md:-right-4 bg-stone-800 text-white rounded-full p-1.5 md:p-2 hover:bg-stone-700 z-50 shadow-lg"
-                            aria-label="Close camera"
-                        >
-                            <X className="w-4 h-4 md:w-5 md:h-5" />
-                        </button>
-                        <CameraCapture onImageCapture={handleImageCapture} />
+                isMobile ? (
+                    <MobileCamera
+                        isOpen={isCameraOpen}
+                        onClose={() => setIsCameraOpen(false)}
+                        onCapture={handleImageCapture}
+                    />
+                ) : (
+                    <div className="fixed bottom-4 left-4 md:bottom-12 md:left-28 lg:left-96 z-60 pointer-events-none origin-bottom-left transform scale-75 sm:scale-90 md:scale-110 lg:scale-125">
+                        <div className="relative pointer-events-auto">
+                            <button
+                                onClick={() => setIsCameraOpen(false)}
+                                className="absolute -top-2 -right-2 md:-top-4 md:-right-4 bg-stone-800 text-white rounded-full p-1.5 md:p-2 hover:bg-stone-700 z-50 shadow-lg"
+                                aria-label="Close camera"
+                            >
+                                <X className="w-4 h-4 md:w-5 md:h-5" />
+                            </button>
+                            <CameraCapture onImageCapture={handleImageCapture} />
+                        </div>
                     </div>
-                </div>
+                )
             )}
 
             {/* Editor Sidebar - Desktop: Right side, Mobile/Tablet: Bottom toolbar + modal */}
@@ -290,8 +307,8 @@ export default function StudioPage() {
                                 onClick={() => setMobileActiveTab(mobileActiveTab === 'filters' ? null : 'filters')}
                                 className={clsx(
                                     "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                                    mobileActiveTab === 'filters' 
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
+                                    mobileActiveTab === 'filters'
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
@@ -303,8 +320,8 @@ export default function StudioPage() {
                                 onClick={() => setMobileActiveTab(mobileActiveTab === 'text' ? null : 'text')}
                                 className={clsx(
                                     "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                                    mobileActiveTab === 'text' 
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
+                                    mobileActiveTab === 'text'
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
@@ -318,8 +335,8 @@ export default function StudioPage() {
                                 }}
                                 className={clsx(
                                     "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                                    selectedPolaroid.isFlipped 
-                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
+                                    selectedPolaroid.isFlipped
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                                         : "text-stone-600 dark:text-stone-400"
                                 )}
                             >
