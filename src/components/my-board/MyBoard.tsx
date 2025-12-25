@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Polaroid } from "@/types/studio";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Components
 import BoardFrame from "./BoardFrame";
@@ -105,8 +106,9 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
       });
 
       if (result.error) {
-        alert("Failed to save: " + result.error);
+        toast.error("Failed to save: " + result.error);
       } else {
+        toast.success("Board saved successfully!");
         setIsEditMode(false);
         router.refresh();
       }
@@ -140,13 +142,15 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
     try {
       const result = await deletePost(id);
       if (result.error) {
-        alert(result.error);
+        toast.error(result.error);
         return;
       }
+      toast.success("Polaroid deleted");
       setPolaroids(prev => prev.filter(p => p.id !== id));
       router.refresh();
     } catch (error) {
       console.error("Delete failed:", error);
+      toast.error("Delete failed");
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { getSignedUrl, createPost } from "@/lib/actions";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function CreatePostForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -21,7 +22,7 @@ export function CreatePostForm() {
       );
 
       if (!success || !url) {
-        alert("Error: " + error);
+        toast.error("Error: " + error);
         return;
       }
 
@@ -50,15 +51,15 @@ export function CreatePostForm() {
       });
 
       if (result.success) {
-        alert("Post created!");
+        toast.success("Post created!");
         // Reset form / Redirect
       } else {
-        alert("DB Error: " + result.error);
+        toast.error("DB Error: " + result.error);
       }
 
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }

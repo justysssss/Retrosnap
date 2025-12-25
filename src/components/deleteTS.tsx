@@ -4,6 +4,7 @@ import { deletePost } from "@/lib/actions";
 import { Trash2 } from "lucide-react";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function DeleteButton({ postId }: { postId: string }) {
   const [isPending, startTransition] = useTransition();
@@ -15,8 +16,9 @@ export function DeleteButton({ postId }: { postId: string }) {
     startTransition(async () => {
       const result = await deletePost(postId);
       if (result.error) {
-        alert(result.error);
+        toast.error(result.error);
       } else {
+        toast.success("Post deleted successfully");
         router.refresh();
       }
     });

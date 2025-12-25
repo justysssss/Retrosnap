@@ -7,6 +7,7 @@ import { Upload, Plus, Loader2 } from "lucide-react";
 import { getSignedUrl, createPostinPrivateWall } from "@/lib/actions";
 import Image from "next/image";
 import ImageCropper from "../studio/ImageCropper";
+import { toast } from "sonner";
 
 interface UploadToPrivateBoardProps {
     onSuccess?: () => void;
@@ -62,7 +63,7 @@ export default function UploadToPrivateBoard({ onSuccess }: UploadToPrivateBoard
                 );
 
                 if (error || !url || !filePath) {
-                    alert(error || "Failed to get upload URL");
+                    toast.error(error || "Failed to get upload URL");
                     return;
                 }
 
@@ -74,7 +75,7 @@ export default function UploadToPrivateBoard({ onSuccess }: UploadToPrivateBoard
                 });
 
                 if (!uploadResponse.ok) {
-                    alert("Failed to upload image");
+                    toast.error("Failed to upload image");
                     return;
                 }
 
@@ -87,9 +88,11 @@ export default function UploadToPrivateBoard({ onSuccess }: UploadToPrivateBoard
                 });
 
                 if (result.error) {
-                    alert(result.error);
+                    toast.error(result.error);
                     return;
                 }
+
+                toast.success("Memory added to your private board!");
 
                 // Success - reset and close
                 setIsOpen(false);
@@ -102,7 +105,7 @@ export default function UploadToPrivateBoard({ onSuccess }: UploadToPrivateBoard
                 onSuccess?.();
             } catch (error) {
                 console.error("Upload error:", error);
-                alert("Upload failed");
+                toast.error("Upload failed");
             }
         });
     };

@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { Loader2, Image as ImageIcon, Camera, MessageSquare } from "lucide-react";
 import { createPost, getSignedUrl } from "@/lib/actions";
 import Image from "next/image";
+import { toast } from "sonner";
 
 export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }) {
     const [rawImage, setRawImage] = useState<string | null>(null);
@@ -101,6 +102,8 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                 throw new Error(result.error);
             }
 
+            toast.success("Memory shared successfully!");
+
             // Reset form
             setImage(null);
             setRawImage(null);
@@ -113,7 +116,7 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
             onSuccess?.();
         } catch (error) {
             console.error("Error creating post:", error);
-            alert("Failed to create post. Please try again.");
+            toast.error("Failed to create post. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -186,12 +189,12 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                     </div>
 
                     <div className="relative">
-                        <Image 
-                            src={image} 
-                            alt="Preview" 
-                            width={400} 
-                            height={400} 
-                            className="w-full rounded-lg border-2 border-white shadow-md aspect-square object-cover" 
+                        <Image
+                            src={image}
+                            alt="Preview"
+                            width={400}
+                            height={400}
+                            className="w-full rounded-lg border-2 border-white shadow-md aspect-square object-cover"
                             style={appliedFilter ? { filter: appliedFilter } : undefined}
                         />
                     </div>
