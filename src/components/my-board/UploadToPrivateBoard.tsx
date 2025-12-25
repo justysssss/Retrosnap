@@ -113,10 +113,9 @@ export default function UploadToPrivateBoard({ onSuccess }: UploadToPrivateBoard
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
-                    <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
-                    <span className="hidden sm:inline">Add Memory</span>
-                    <span className="sm:hidden">Add</span>
+                <Button size="sm" className="gap-1 md:gap-2 px-2 md:px-3">
+                    <Plus size={16} />
+                    <span className="hidden md:inline">Add Memory</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
