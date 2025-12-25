@@ -14,6 +14,8 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
     const [image, setImage] = useState<string | null>(null);
     const [caption, setCaption] = useState("");
     const [secretMessage, setSecretMessage] = useState("");
+    const [instagramUrl, setInstagramUrl] = useState("");
+    const [xUrl, setXUrl] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadMode, setUploadMode] = useState<"image" | "polaroid" | null>(null);
     const [showCropper, setShowCropper] = useState(false);
@@ -95,6 +97,8 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                 message: caption,
                 secretMessage: secretMessage || undefined,
                 filePath: signedUrlResult.filePath,
+                instagramUrl: instagramUrl || undefined,
+                twitterUrl: xUrl || undefined,
                 aspectRatio: 1, // 1:1 aspect ratio
             });
 
@@ -228,6 +232,38 @@ export default function CreatePostForm({ onSuccess }: { onSuccess?: () => void }
                             maxLength={100}
                         />
                         <p className="text-xs text-stone-400 mt-0.5 text-right">{secretMessage.length}/100</p>
+                    </div>
+                    <div>
+                        <label htmlFor="secretMessage" className="flex items-center gap-1.5 text-xs font-medium text-stone-700 mb-1">
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            Instagram URL
+                        </label>
+                        <textarea
+                            id="InstagramUrl"
+                            value={instagramUrl}
+                            onChange={(e) => setInstagramUrl(e.target.value)}
+                            className="w-full p-2 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-sm text-stone-800"
+                            placeholder="Write a secret message for the back..."
+                            rows={2}
+                            maxLength={100}
+                        />
+                        <p className="text-xs text-stone-400 mt-0.5 text-right">{instagramUrl.length}/100</p>
+                    </div>
+                                        <div>
+                        <label htmlFor="secretMessage" className="flex items-center gap-1.5 text-xs font-medium text-stone-700 mb-1">
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            X (Twitter) URL
+                        </label>
+                        <textarea
+                            id="XUrl"
+                            value={xUrl}
+                            onChange={(e) => setXUrl(e.target.value)}
+                            className="w-full p-2 border-2 border-stone-200 rounded-lg focus:border-stone-800 focus:ring-0 transition-colors font-handwriting text-sm text-stone-800"
+                            placeholder="Write a secret message for the back..."
+                            rows={2}
+                            maxLength={100}
+                        />
+                        <p className="text-xs text-stone-400 mt-0.5 text-right">{xUrl.length}/100</p>
                     </div>
                 </>
             )}
