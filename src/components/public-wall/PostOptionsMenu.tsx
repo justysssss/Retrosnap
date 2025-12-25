@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MoreVertical, Download } from "lucide-react";
 import { DeleteButton } from "../deleteTS";
+import { toast } from "sonner";
 
 interface PostOptionsMenuProps {
     postId: string;
@@ -49,9 +50,10 @@ export default function PostOptionsMenu({
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
             setIsOpen(false);
+            toast.success("Image downloaded successfully");
         } catch (error) {
             console.error("Download failed:", error);
-            alert("Failed to download image");
+            toast.error("Failed to download image");
         }
     };
 
