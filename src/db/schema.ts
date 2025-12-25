@@ -1,6 +1,6 @@
 
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index, integer, pgEnum, primaryKey, real } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, integer, pgEnum, primaryKey, real, jsonb } from "drizzle-orm/pg-core";
 
 export const imageStatusEnum = pgEnum("image_status", [
   "pending", //Uploaded to Bucket 1, wating for cloud function,
@@ -17,6 +17,8 @@ export const reactionTypeEnum = pgEnum("reaction_type", [
   "laughter",
   "sad",
 ])
+
+
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -90,11 +92,12 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   post: many(post),
   reaction: many(reaction),
+  board: one(board),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -116,7 +119,10 @@ export const post = pgTable("post", {
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   message: text("messsage"),
   secretMessage: text("secret_message"),
+  instagramUrl: text("instagram_url"),
+  twitterUrl: text("twitter_url"),
   isPublic: boolean("is_public").default(false).notNull(),
+  isPrivate: boolean("is_private").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 
@@ -190,3 +196,45 @@ export const reactionRelations = relations(reaction, ({ one }) => ({
     references: [post.id],
   })
 }))
+
+export const clipVariantEnum = pgEnum("clip_variant", [
+  "wood",
+  "metal",
+  "plastic"
+]);
+
+// Types for JSON columns
+type DecorationItem = {
+  id: string;
+  type: "sticker" | "lottie" | "emoji";
+  src: string;
+  x: number;
+  y: number;
+  scale: number;
+};
+
+export const board = pgTable("board", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  background: text("background").default("cork").notNull(),
+  frame: text("frame").default("wood-dark").notNull(),
+
+  wireColor: text("wire_color").default("#8b5a2b").notNull(),
+  clipColor: text("clip_color").default("#d4a373").notNull(),
+  clipVariant: clipVariantEnum("clip_variant").default("wood").notNull(),
+
+  decorations: jsonb("decorations").$type<DecorationItem[]>().default([]),
+  postOrder: jsonb("post_order").$type<string[]>().default([]),
+
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+export const boardRelations = relations(board, ({ one }) => ({
+  user: one(user, {
+    fields: [board.userId],
+    references: [user.id],
+  }),
+}));

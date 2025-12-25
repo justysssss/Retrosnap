@@ -54,8 +54,15 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
                 const parent = ref.current?.offsetParent as HTMLElement;
                 if (parent) {
                     const rect = parent.getBoundingClientRect();
-                    const x = e.clientX - rect.left - (ref.current?.offsetWidth || 0) / 2;
-                    const y = e.clientY - rect.top - (ref.current?.offsetHeight || 0) / 2;
+                    // Account for CSS scaling (transform: scale) on the board container.
+                    const scaleX = parent.offsetWidth > 0 ? rect.width / parent.offsetWidth : 1;
+                    const scaleY = parent.offsetHeight > 0 ? rect.height / parent.offsetHeight : 1;
+
+                    const relativeX = (e.clientX - rect.left) / scaleX;
+                    const relativeY = (e.clientY - rect.top) / scaleY;
+
+                    const x = relativeX - (ref.current?.offsetWidth || 0) / 2;
+                    const y = relativeY - (ref.current?.offsetHeight || 0) / 2;
                     setPosition({ x, y });
                 }
             } else if (isResizing) {

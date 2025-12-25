@@ -1,49 +1,40 @@
 "use client";
 
-import { Wand2, RotateCw, MessageSquare, Type } from "lucide-react";
+import { RotateCw, MessageSquare, Type } from "lucide-react";
 import { clsx } from "clsx";
 import { Polaroid } from "@/types/studio";
 import DownloadBtn from "./DownloadBtn";
+import FilterSelector from "./FilterSelector";
+import { getFilterById, PHOTO_FILTERS } from "@/lib/photoFilters";
 
 interface PolaroidEditorProps {
     polaroid: Polaroid;
     onUpdate: (updates: Partial<Polaroid>) => void;
 }
 
-const FILTERS = [
-    { name: "Normal", class: "none" },
-    { name: "Grayscale", class: "grayscale" },
-    { name: "Sepia", class: "sepia" },
-    { name: "Vintage", class: "sepia-[.5] contrast-[1.2] brightness-[1.1] saturate-[1.2]" },
-    { name: "Fade", class: "brightness-[1.1] contrast-[.9] saturate-[.8] sepia-[.2]" },
-];
-
 export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorProps) {
+    const handleFilterSelect = (filterId: string) => {
+        const filter = getFilterById(filterId);
+        if (filter) {
+            onUpdate({ filter: filter.cssFilter });
+        }
+    };
+
+    // Get current filter ID from CSS string by comparing filter values
+    const getCurrentFilterId = () => {
+        const currentFilter = PHOTO_FILTERS.find(f => f.cssFilter === polaroid.filter);
+        return currentFilter?.id || "normal";
+    };
+
     return (
         <div className="space-y-8">
             {/* Filters */}
-            <div>
-                <h3 className="text-xl font-marker mb-4 flex items-center gap-2 text-stone-800 dark:text-stone-100">
-                    <Wand2 className="w-5 h-5" />
-                    Filters
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                    {FILTERS.map((filter) => (
-                        <button
-                            key={filter.name}
-                            onClick={() => onUpdate({ filter: filter.class })}
-                            className={clsx(
-                                "px-3 py-2 rounded-lg text-sm font-bold transition-all",
-                                polaroid.filter === filter.class
-                                    ? "bg-stone-800 text-white shadow-md transform scale-105 dark:bg-stone-200 dark:text-stone-900"
-                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-700 dark:text-stone-300 dark:hover:bg-stone-600"
-                            )}
-                        >
-                            {filter.name}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <FilterSelector
+                imageSrc={polaroid.imageSrc}
+                selectedFilter={getCurrentFilterId()}
+                onFilterSelect={handleFilterSelect}
+                showCategories={true}
+            />
 
             {/* Caption */}
             <div>
@@ -71,7 +62,7 @@ export default function PolaroidEditor({ polaroid, onUpdate }: PolaroidEditorPro
                     value={polaroid.secretMessage}
                     onChange={(e) => onUpdate({ secretMessage: e.target.value })}
                     placeholder="Something for the back..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[100px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-stone-200 focus:border-stone-800 focus:outline-none font-handwriting text-xl bg-transparent min-h-[80px] resize-none dark:border-stone-600 dark:focus:border-stone-400 dark:text-stone-100 dark:placeholder-stone-500"
                     maxLength={100}
                 />
                 <p className="text-xs text-stone-400 mt-2 text-right">

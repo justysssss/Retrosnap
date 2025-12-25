@@ -231,7 +231,7 @@ export default function SettingsPage() {
                                                     : "border-stone-200 hover:border-stone-400 dark:border-stone-600"
                                             )}
                                         >
-                                            <div className={clsx("absolute inset-0 border-[8px]", frame.color,
+                                            <div className={clsx("absolute inset-0 border-8", frame.color,
                                                 frame.id === "metal" ? "border-stone-400 bg-stone-100" : "border-current bg-[#f0f0f0]"
                                             )} />
                                             <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-stone-800">

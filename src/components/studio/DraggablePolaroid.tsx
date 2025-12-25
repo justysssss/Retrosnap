@@ -72,7 +72,7 @@ export default function DraggablePolaroid({
         e.stopPropagation();
         onUpdate({ isFlipped: !polaroid.isFlipped });
       }}
-      className="absolute w-64 h-80 cursor-grab active:cursor-grabbing"
+      className="absolute w-48 h-64 sm:w-56 sm:h-72 md:w-64 md:h-80 lg:w-72 lg:h-[22rem] cursor-grab active:cursor-grabbing"
       style={{ perspective: "1000px" }}
     >
       <motion.div
@@ -116,7 +116,8 @@ export default function DraggablePolaroid({
               src={polaroid.imageSrc}
               alt="Polaroid"
               crossOrigin="anonymous"
-              className={clsx("w-full h-full object-cover", polaroid.filter)}
+              className="w-full h-full object-cover"
+              style={{ filter: polaroid.filter }}
             />
           </div>
           <div className="flex-1 flex items-center justify-center text-center px-2">
@@ -136,10 +137,23 @@ export default function DraggablePolaroid({
             transform: "rotateY(180deg) translateZ(1px)",
           }}
         >
-          {/* Add to Public Pinboard Button (Visual Only for now) */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full shadow-md transform -rotate-2 whitespace-nowrap z-20">
+          {/* Add to Public Pinboard Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const polaroidData = {
+                imageSrc: polaroid.imageSrc,
+                caption: polaroid.caption,
+                secretMessage: polaroid.secretMessage,
+                filter: polaroid.filter
+              };
+              sessionStorage.setItem('studioPolaroid', JSON.stringify(polaroidData));
+              window.location.href = '/public-wall?from=studio';
+            }}
+            className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-full shadow-md transform -rotate-2 whitespace-nowrap z-20 hover:bg-red-700 transition-colors cursor-pointer"
+          >
             <span className="font-marker text-sm">Add to Public Pinboard</span>
-          </div>
+          </button>
 
           <div className="w-full h-full border-2 border-stone-700/50 border-dashed rounded-lg p-4 flex items-center justify-center relative">
             <textarea
