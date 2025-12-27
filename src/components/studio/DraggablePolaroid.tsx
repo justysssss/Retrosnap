@@ -33,6 +33,7 @@ export default function DraggablePolaroid({
         const dataUrl = await toPng(frontRef.current, {
           quality: 0.95,
           pixelRatio: 2,
+          skipFonts: true,
         });
         const link = document.createElement("a");
         link.download = `retrosnap-${polaroid.id}.png`;
