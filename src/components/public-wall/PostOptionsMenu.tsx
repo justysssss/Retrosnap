@@ -39,7 +39,15 @@ export default function PostOptionsMenu({
 
     const handleDownload = async () => {
         try {
-            const response = await fetch(imageUrl);
+            const params = new URLSearchParams({
+                url: imageUrl,
+                filename: `retrosnap-${postId}.jpg`
+            });
+            const apiUrl = `/api/public-wall/download?${params.toString()}`;
+
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error("Download failed");
+
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -49,6 +57,7 @@ export default function PostOptionsMenu({
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
+
             setIsOpen(false);
             toast.success("Image downloaded successfully");
         } catch (error) {
