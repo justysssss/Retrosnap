@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import ReactionButton from "./ReactionButton";
 import Image from "next/image";
@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import PostOptionsMenu from "./PostOptionsMenu";
 import { Post } from "./PublicWallGrid";
+import { toPng } from "html-to-image";
+import { toast } from "sonner";
 
 
 interface PostModalProps {
@@ -19,9 +21,31 @@ interface PostModalProps {
 
 export default function PostModal({ isOpen, onClose, post, currentUserId }: PostModalProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const frontRef = useRef<HTMLDivElement>(null);
+
   console.log("The user react in PostModal is:", post?.userReaction)
 
   if (!post) return null;
+
+  const handleDownload = async () => {
+    if (frontRef.current) {
+      try {
+        const dataUrl = await toPng(frontRef.current, {
+          quality: 0.95,
+          pixelRatio: 2,
+          skipFonts: true,
+        });
+        const link = document.createElement("a");
+        link.download = `retrosnap-${post.id}.png`;
+        link.href = dataUrl;
+        link.click();
+        toast.success("Polaroid saved to device");
+      } catch (err) {
+        console.error("Failed to download polaroid", err);
+        toast.error("Failed to save polaroid");
+      }
+    }
+  };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,6 +93,7 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
                 postUserId={post.userId}
                 currentUserId={currentUserId}
                 imageUrl={post.image.fullUrl || post.image.thumbnailUrl}
+                onDownload={handleDownload}
               />
             </div>
 
@@ -80,6 +105,7 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
             >
               {/* Front Side */}
               <div
+                ref={frontRef}
                 className="bg-white relative w-full"
                 style={{
                   backfaceVisibility: "hidden",

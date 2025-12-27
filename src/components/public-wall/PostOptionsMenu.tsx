@@ -10,6 +10,7 @@ interface PostOptionsMenuProps {
     postUserId: string;
     currentUserId?: string;
     imageUrl: string;
+    onDownload?: () => void;
 }
 
 export default function PostOptionsMenu({
@@ -17,6 +18,7 @@ export default function PostOptionsMenu({
     postUserId,
     currentUserId,
     imageUrl,
+    onDownload,
 }: PostOptionsMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -38,6 +40,12 @@ export default function PostOptionsMenu({
     }, [isOpen]);
 
     const handleDownload = async () => {
+        if (onDownload) {
+            onDownload();
+            setIsOpen(false);
+            return;
+        }
+
         try {
             const params = new URLSearchParams({
                 url: imageUrl,
