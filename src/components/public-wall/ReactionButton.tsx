@@ -113,6 +113,17 @@ export default function ReactionButton({
           ? "text-blue-600 bg-blue-50 border border-blue-200"
           : "text-white bg-stone-800 hover:bg-stone-700 border border-stone-700"
           }`}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isPending) return;
+          if (selectedReaction) {
+            // Clicking again retracts the current reaction
+            handleReaction(selectedReaction);
+          } else {
+            // No reaction yet — open/close picker (helps on touch devices)
+            setIsHovered((v) => !v);
+          }
+        }}
         disabled={isPending}
       >
         {currentReaction ? (
