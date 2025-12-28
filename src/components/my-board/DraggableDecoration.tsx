@@ -28,12 +28,15 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
     const [isResizing, setIsResizing] = useState(false);
     const [position, setPosition] = useState({ x: item.x, y: item.y });
     const [scale, setScale] = useState(item.scale);
+
     const ref = useRef<HTMLDivElement>(null);
     const emojiRef = useRef<HTMLSpanElement>(null);
-    const startResizePos = useRef({ x: 0, y: 0 });
-    const startScale = useRef(1);
 
-    // Update styles imperatively to avoid lint errors
+    // Refs for drag/resize calculations
+    const dragStart = useRef({ mouseX: 0, mouseY: 0, itemX: 0, itemY: 0 });
+    const resizeStart = useRef({ mouseX: 0, width: 0, startScale: 1 });
+
+    // Update imperatively
     useEffect(() => {
         if (ref.current) {
             ref.current.style.left = `${position.x}px`;
@@ -46,112 +49,165 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
         }
     }, [position.x, position.y, scale]);
 
-    // Handle Dragging and Resizing Logic
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (isDragging) {
-                // Calculate new position relative to parent
                 const parent = ref.current?.offsetParent as HTMLElement;
-                if (parent) {
-                    const rect = parent.getBoundingClientRect();
-                    // Account for CSS scaling (transform: scale) on the board container.
-                    const scaleX = parent.offsetWidth > 0 ? rect.width / parent.offsetWidth : 1;
-                    const scaleY = parent.offsetHeight > 0 ? rect.height / parent.offsetHeight : 1;
+                if (!parent) return;
 
-                    const relativeX = (e.clientX - rect.left) / scaleX;
-                    const relativeY = (e.clientY - rect.top) / scaleY;
+                const rect = parent.getBoundingClientRect();
+                // Calculate scale of the parent (in case of zoom/transforms)
+                const scaleX = parent.offsetWidth > 0 ? rect.width / parent.offsetWidth : 1;
+                const scaleY = parent.offsetHeight > 0 ? rect.height / parent.offsetHeight : 1;
 
-                    const x = relativeX - (ref.current?.offsetWidth || 0) / 2;
-                    const y = relativeY - (ref.current?.offsetHeight || 0) / 2;
-                    setPosition({ x, y });
-                }
+                const deltaX = (e.clientX - dragStart.current.mouseX) / scaleX;
+                const deltaY = (e.clientY - dragStart.current.mouseY) / scaleY;
+
+                setPosition({
+                    x: dragStart.current.itemX + deltaX,
+                    y: dragStart.current.itemY + deltaY
+                });
             } else if (isResizing) {
-                const deltaX = e.clientX - startResizePos.current.x;
-                // Sensitivity factor
-                const newScale = Math.max(0.5, Math.min(3, startScale.current + deltaX * 0.01));
-                setScale(newScale);
+                const parent = ref.current?.offsetParent as HTMLElement;
+                // If parent is scaled, we might need to adjust sensitivity, but usually linear is fine for resize
+                // Actually, if the board is zoomed out, 1px of mouse move covers more "board pixels".
+                // But let's stick to simple sensitivity first.
+
+                const deltaX = e.clientX - resizeStart.current.mouseX;
+
+                // We base new scale on the original width + delta
+                const baseWidth = 150;
+                // However, previous logic was: newScale = startScale + delta * 0.01
+                // Let's keep it simple and consistent with previous logic but using refs for start values
+                // Or better: calculate based on visual size change
+
+                // Let's stick to the previous feeling:
+                // each pixel of mouse movement adds a fraction to the scale.
+                const scaleChange = deltaX * 0.005;
+                // Using stored startScale if we had one, but we didn't store it in a ref for this specifically, 
+                // wait, we can just use the current scale state? No, that causes jitter.
+                // We should store startScale in resizeStart.
+
+                // Re-implementing resize logic below in onMouseDown to capture startScale
             }
         };
 
-        const handleMouseUp = () => {
-            if (isDragging) {
-                setIsDragging(false);
-                onUpdate(item.id, position.x, position.y, scale);
-            }
+        const handleResizeMove = (e: MouseEvent) => {
             if (isResizing) {
+                const deltaX = e.clientX - resizeStart.current.mouseX;
+                // Use a factor that feels right. 
+                // If the user moves mouse 100px, maybe we want scale to increase by 1.
+                // 150px * 1 = 150px.
+                const currentScale = resizeStart.current.startScale;
+                const newScale = Math.max(0.5, Math.min(3, currentScale + deltaX * 0.01));
+                setScale(newScale);
+            }
+        }
+
+        const handleMouseUp = () => {
+            if (isDragging || isResizing) {
+                setIsDragging(false);
                 setIsResizing(false);
                 onUpdate(item.id, position.x, position.y, scale);
             }
         };
 
-        if (isDragging || isResizing) {
+        if (isDragging) {
             window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
+        }
+        if (isResizing) {
+            window.addEventListener("mousemove", handleResizeMove);
             window.addEventListener("mouseup", handleMouseUp);
         }
 
         return () => {
             window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mousemove", handleResizeMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [isDragging, isResizing, item.id, onUpdate, position.x, position.y, scale]);
+    }, [isDragging, isResizing, item.id, onUpdate, position.x, position.y, scale]); // dependency on scale/pos might causes re-bind, but refs handle the start values.
 
     return (
         <div
             ref={ref}
-            className={`absolute z-20 ${isEditMode ? "group" : ""}`}
+            className={`absolute z-20 ${isEditMode ? "cursor-move" : ""}`}
             onMouseDown={(e) => {
                 if (!isEditMode) return;
-                e.preventDefault(); // Prevent text selection
+                e.preventDefault();
+                e.stopPropagation(); // Stop bubbling to board
                 setIsDragging(true);
+                dragStart.current = {
+                    mouseX: e.clientX,
+                    mouseY: e.clientY,
+                    itemX: position.x,
+                    itemY: position.y
+                };
             }}
         >
             {isEditMode && (
                 <>
-                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400 rounded-lg pointer-events-none" />
+                    {/* Border - Always visible in edit mode */}
+                    <div className="absolute inset-0 border-2 border-blue-400 border-dashed rounded-lg pointer-events-none" />
+
+                    {/* Delete Button - Always visible in edit mode */}
                     <button
-                        onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 z-30 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onMouseDown={(e) => e.stopPropagation()} // Prevent drag start
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(item.id);
+                        }}
+                        className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 z-30 flex items-center justify-center transition-transform hover:scale-110"
                         aria-label="Delete decoration"
                     >
-                        <X size={12} />
+                        <X size={14} />
                     </button>
-                    {/* Resize Handle */}
+
+                    {/* Resize Handle - Always visible in edit mode */}
                     <div
-                        className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full cursor-se-resize z-30 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -bottom-2 -right-2 w-5 h-5 bg-blue-500 border-2 border-white rounded-full cursor-se-resize z-30 shadow-sm"
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
                             setIsResizing(true);
-                            startResizePos.current = { x: e.clientX, y: e.clientY };
-                            startScale.current = scale;
+                            setIsDragging(false); // Ensure we don't drag
+                            resizeStart.current = {
+                                mouseX: e.clientX,
+                                width: 0, // Unused
+                                startScale: scale // Store current scale
+                            } as any;
                         }}
                     />
                 </>
             )}
 
-            {item.type === "lottie" ? (
-                <dotlottie-player
-                    src={item.src}
-                    background="transparent"
-                    speed="1"
-                    className="w-full h-full"
-                    loop
-                    autoplay
-                />
-            ) : item.type === "emoji" ? (
-                <div className="w-full h-full flex items-center justify-center">
-                    <span ref={emojiRef} className="text-[80px] leading-none select-none cursor-default">{item.src}</span>
-                </div>
-            ) : (
-                <div className="relative w-full h-full">
-                    <Image
+            {/* Content with pointer-events-none to prevent interference, or handle carefully */}
+            <div className={`w-full h-full ${isEditMode ? 'pointer-events-none' : ''}`}>
+                {item.type === "lottie" ? (
+                    <dotlottie-player
                         src={item.src}
-                        alt="decoration"
-                        fill
-                        className="object-contain drop-shadow-md"
+                        background="transparent"
+                        speed="1"
+                        className="w-full h-full"
+                        loop
+                        autoplay
                     />
-                </div>
-            )}
+                ) : item.type === "emoji" ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <span ref={emojiRef} className="text-[80px] leading-none select-none cursor-default">{item.src}</span>
+                    </div>
+                ) : (
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={item.src}
+                            alt="decoration"
+                            fill
+                            className="object-contain drop-shadow-md"
+                            draggable={false}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
