@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Lottie from "lottie-react";
-import { ThumbsUp, Flame, Snowflake } from "lucide-react";
+import { ThumbsUp, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Import your Lottie files
@@ -13,6 +13,7 @@ import partyAnimation from "../../../public/Reactions/party_lottie.json";
 import thumbsUpAnimation from "../../../public/Reactions/ThumbsUp.json";
 import coldAnimation from "../../../public/Reactions/cold_lottie.json";
 import { ReactionType, toggleReaction } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 const REACTIONS = [
   { id: "heart", label: "Love", animation: heartAnimation, icon: null },
@@ -23,34 +24,49 @@ const REACTIONS = [
   { id: "sad", label: "Sad", animation: sadAnimation, icon: null },
 ];
 
+type ReactionAction = "added" | "removed" | "updated";
+
 export default function ReactionButton({
   postId,
-  initialReaction = null
+  initialReaction = null,
+  onReactionApplied,
 }: {
   postId: string;
-  initialReaction?: string | null
+  initialReaction?: string | null;
+  onReactionApplied?: (args: { nextReaction: string | null; action: ReactionAction }) => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedReaction, setSelectedReaction] = useState<string | null>(initialReaction);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter()
 
   const handleReaction = (type: string) => {
-    const newReaction = selectedReaction === type ? null : type;
+    const prevReaction = selectedReaction;
+    const newReaction = prevReaction === type ? null : type;
     setSelectedReaction(newReaction);
     setIsHovered(false);
 
     startTransition(async () => {
       const result = await toggleReaction(postId, type as ReactionType);
       if (result.error) {
-        setSelectedReaction(selectedReaction);
+        setSelectedReaction(prevReaction);
         console.error(result.error);
+        return;
       }
+
+      if (result.success && result.action) {
+        onReactionApplied?.({
+          nextReaction: result.action === "removed" ? null : type,
+          action: result.action as ReactionAction,
+        });
+      }
+
+      router.refresh();
+
     });
   };
 
   const currentReaction = REACTIONS.find((r) => r.id === selectedReaction);
-  console.log("the current is:", currentReaction);
-  console.log("The initial is:", initialReaction)
 
   return (
     <div

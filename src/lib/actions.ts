@@ -96,7 +96,7 @@ export async function createPost(formData: {
         aspectRatio: aspectRatio,
       })
     });
-    revalidatePath("/studio")
+    revalidatePath("/public-wall")
 
     return { success: true, postId };
 

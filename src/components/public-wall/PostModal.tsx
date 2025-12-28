@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import ReactionButton from "./ReactionButton";
 import Image from "next/image";
@@ -19,29 +19,25 @@ interface PostModalProps {
   currentUserId?: string;
 }
 
-export default function PostModal({ isOpen, onClose, post, currentUserId }: PostModalProps) {
+function PostModalBody({ post, currentUserId }: { post: Post; currentUserId?: string }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
 
-  console.log("The user react in PostModal is:", post?.userReaction)
-
-  if (!post) return null;
+  const [reactionCount, setReactionCount] = useState(post.reactionCount || 0);
+  const [userReaction, setUserReaction] = useState<string | null>(post.userReaction ?? null);
 
   const handleDownload = async () => {
     if (frontRef.current) {
       try {
-        // Wait for fonts to load
         if (document.fonts) {
           await document.fonts.ready;
-          // Give a small delay to ensure fonts are fully rendered
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
 
-        // Use modern-screenshot which supports oklch/lab colors natively
         const dataUrl = await domToPng(frontRef.current, {
           scale: 3,
           quality: 1.0,
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
         });
 
         const link = document.createElement("a");
@@ -63,14 +59,7 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
     }
   };
 
-  // Reset flip state when modal closes
-  const handleClose = () => {
-    setIsFlipped(false);
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl p-0 bg-transparent border-none shadow-none overflow-visible">
         <DialogTitle className="sr-only">Post by {post.user?.name || "User"}</DialogTitle>
 
@@ -190,7 +179,15 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
                 </div>
 
                 <div className="ml-auto sm:ml-2">
-                  <ReactionButton postId={post.id} initialReaction={post.userReaction} />
+                  <ReactionButton
+                    postId={post.id}
+                    initialReaction={userReaction}
+                    onReactionApplied={({ nextReaction, action }) => {
+                      setUserReaction(nextReaction);
+                      if (action === "added") setReactionCount((c) => c + 1);
+                      if (action === "removed") setReactionCount((c) => Math.max(0, c - 1));
+                    }}
+                  />
                 </div>
               </div>
 
@@ -201,7 +198,7 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
                   <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-blue-100 border-2 border-stone-900 flex items-center justify-center text-xs sm:text-sm">👍</div>
                 </div>
                 <div className="text-left">
-                  <span className="text-base sm:text-lg text-white font-bold block">{post.reactionCount || 0}</span>
+                  <span className="text-base sm:text-lg text-white font-bold block">{reactionCount}</span>
                   <span className="text-xs text-stone-400 uppercase tracking-wider">likes</span>
                 </div>
               </div>
@@ -209,6 +206,20 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
           </div>
         </div>
       </DialogContent>
+  );
+}
+
+export default function PostModal({ isOpen, onClose, post, currentUserId }: PostModalProps) {
+  if (!post) return null;
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <PostModalBody key={post.id} post={post} currentUserId={currentUserId} />
     </Dialog>
   );
 }
