@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Download } from "lucide-react";
-import { DeleteButton } from "../deleteTS";
+import { useState } from "react";
+import { MoreVertical, Download, Trash2 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 interface PostOptionsMenuProps {
@@ -10,6 +15,7 @@ interface PostOptionsMenuProps {
     postUserId: string;
     currentUserId?: string;
     imageUrl: string;
+    onDownload: () => void;
 }
 
 export default function PostOptionsMenu({
@@ -17,91 +23,66 @@ export default function PostOptionsMenu({
     postUserId,
     currentUserId,
     imageUrl,
+    onDownload,
 }: PostOptionsMenuProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const isOwner = currentUserId && currentUserId === postUserId;
-
-    // Close menu when clicking outside
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this post?")) {
+            return;
         }
 
-        if (isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-            return () => document.removeEventListener("mousedown", handleClickOutside);
-        }
-    }, [isOpen]);
-
-    const handleDownload = async () => {
+        setIsDeleting(true);
         try {
-            const params = new URLSearchParams({
-                url: imageUrl,
-                filename: `retrosnap-${postId}.jpg`
+            const response = await fetch(`/api/posts/${postId}`, {
+                method: "DELETE",
             });
-            const apiUrl = `/api/public-wall/download?${params.toString()}`;
 
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error("Download failed");
+            if (!response.ok) {
+                throw new Error("Failed to delete post");
+            }
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `retrosnap-${postId}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-
-            setIsOpen(false);
-            toast.success("Image downloaded successfully");
+            toast.success("Post deleted successfully");
+            // Refresh the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         } catch (error) {
-            console.error("Download failed:", error);
-            toast.error("Failed to download image");
+            console.error("Error deleting post:", error);
+            toast.error("Failed to delete post");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
+    const isOwner = currentUserId && postUserId === currentUserId;
+
     return (
-        <div className="relative" ref={menuRef}>
-            {/* 3-dot button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2 hover:bg-stone-700/50 rounded-full transition-colors text-stone-300 hover:text-white"
-                aria-label="Post options"
-            >
-                <MoreVertical size={20} />
-            </button>
-
-            {/* Dropdown menu */}
-            {isOpen && (
-                <div className="absolute right-0 top-full mt-1 bg-stone-800 border border-stone-700 rounded-lg shadow-xl overflow-hidden min-w-[160px] z-50">
-                    <div className="py-1">
-                        {/* Download button - available to everyone */}
-                        <button
-                            onClick={handleDownload}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-stone-200 hover:text-white hover:bg-stone-700/50 transition-colors"
-                        >
-                            <Download size={16} />
-                            <span className="text-sm font-medium">Download</span>
-                        </button>
-
-                        {/* Delete button - only for post owner */}
-                        {isOwner && (
-                            <div
-                                className="border-t border-stone-700"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                <DeleteButton postId={postId} />
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-800/80 hover:bg-stone-700/90 transition-colors text-white"
+                    title="Options"
+                >
+                    <MoreVertical className="w-4 h-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={onDownload} className="cursor-pointer">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                </DropdownMenuItem>
+                {isOwner && (
+                    <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </DropdownMenuItem>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
