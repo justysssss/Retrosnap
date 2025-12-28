@@ -5,7 +5,7 @@ import { clsx } from "clsx";
 import { Polaroid } from "@/types/studio";
 import { RefObject, useRef, useEffect } from "react";
 import { Trash2 } from "lucide-react";
-import { toPng } from "html-to-image";
+import { domToPng } from "modern-screenshot";
 
 interface DraggablePolaroidProps {
   polaroid: Polaroid;
@@ -28,20 +28,65 @@ export default function DraggablePolaroid({
   const frontRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
-    if (frontRef.current) {
-      try {
-        const dataUrl = await toPng(frontRef.current, {
-          quality: 0.95,
-          pixelRatio: 2,
-          skipFonts: true,
-        });
-        const link = document.createElement("a");
-        link.download = `retrosnap-${polaroid.id}.png`;
-        link.href = dataUrl;
-        link.click();
-      } catch (err) {
-        console.error("Failed to download polaroid", err);
+    try {
+      // Wait for fonts to load
+      if (document.fonts) {
+        await document.fonts.ready;
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
+
+      // Create a hidden download template that matches public wall structure exactly
+      const downloadTemplate = document.createElement('div');
+      downloadTemplate.style.position = 'absolute';
+      downloadTemplate.style.left = '-9999px';
+      downloadTemplate.style.top = '0';
+      downloadTemplate.innerHTML = `
+        <div style="background-color: white; width: 400px; position: relative;">
+          <div style="padding: 20px; padding-bottom: 60px;">
+            <div style="width: 100%; aspect-ratio: 1/1; background-color: #f5f5f4; overflow: hidden; position: relative;">
+              <img 
+                src="${polaroid.imageSrc}" 
+                alt="Polaroid" 
+                crossorigin="anonymous"
+                style="width: 100%; height: 100%; object-fit: cover; filter: ${polaroid.filter || 'none'};"
+              />
+            </div>
+            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; min-height: 48px;">
+              <p style="font-family: var(--font-caveat), Caveat, cursive; font-size: 24px; color: #292524; text-align: center; line-height: 1.25; word-wrap: break-word; width: 100%;">
+                ${polaroid.caption || ''}
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(downloadTemplate);
+
+      // Wait for image to load in the template
+      const templateImg = downloadTemplate.querySelector('img');
+      if (templateImg && !templateImg.complete) {
+        await new Promise((resolve) => {
+          templateImg.onload = resolve;
+          templateImg.onerror = resolve;
+        });
+      }
+
+      // Capture the template
+      const dataUrl = await domToPng(downloadTemplate.firstElementChild as HTMLElement, {
+        scale: 3,
+        quality: 1.0,
+        backgroundColor: '#ffffff',
+      });
+
+      // Cleanup
+      document.body.removeChild(downloadTemplate);
+
+      const link = document.createElement("a");
+      link.download = `retrosnap-${polaroid.id}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Failed to download polaroid", err);
     }
   };
 
@@ -103,28 +148,31 @@ export default function DraggablePolaroid({
         {/* Front Side */}
         <div
           ref={frontRef}
-          className="absolute inset-0 bg-white p-3 pb-12 flex flex-col"
+          className="absolute inset-0 bg-white flex flex-col"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             transform: "rotateX(0deg) translateZ(1px)"
           }}
         >
-          <div className="aspect-square bg-stone-100 overflow-hidden mb-3 relative">
-            <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] z-10 pointer-events-none" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={polaroid.imageSrc}
-              alt="Polaroid"
-              crossOrigin="anonymous"
-              className="w-full h-full object-cover"
-              style={{ filter: polaroid.filter }}
-            />
-          </div>
-          <div className="flex-1 flex items-center justify-center text-center px-2">
-            <p className="font-handwriting text-2xl text-stone-800 leading-tight break-words w-full">
-              {polaroid.caption}
-            </p>
+          {/* Polaroid content with proper proportions */}
+          <div className="p-4 pb-16 flex flex-col h-full">
+            <div className="aspect-square bg-stone-100 overflow-hidden relative flex-shrink-0">
+              <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] z-10 pointer-events-none" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={polaroid.imageSrc}
+                alt="Polaroid"
+                crossOrigin="anonymous"
+                className="w-full h-full object-cover"
+                style={{ filter: polaroid.filter }}
+              />
+            </div>
+            <div className="flex-1 flex items-center justify-center text-center px-2 mt-3">
+              <p className="font-handwriting text-2xl text-stone-800 leading-tight break-words w-full">
+                {polaroid.caption}
+              </p>
+            </div>
           </div>
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] opacity-10 pointer-events-none" />
         </div>

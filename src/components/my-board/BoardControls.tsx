@@ -54,10 +54,9 @@ export default function BoardControls({
 
   return (
     <>
-      {/* Backdrop for desktop only */}
+      {/* Backdrop for desktop only - no onClick to allow sticker interactions */}
       <div
-        className="hidden xl:block fixed inset-0 bg-black/30 z-[55]"
-        onClick={onClose}
+        className="hidden xl:block fixed inset-0 bg-black/30 z-[55] pointer-events-none"
       />
 
       {/* Panel - Starts after sidebar on mobile/tablet, side panel on desktop */}

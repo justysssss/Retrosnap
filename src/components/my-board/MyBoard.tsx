@@ -121,9 +121,9 @@ export default function MyBoard({ initialPolaroids = [], initialBoardData }: MyB
       id: Math.random().toString(36).substr(2, 9),
       type,
       src,
-      x: 100, // Default center-ish
-      y: 100,
-      scale: 1
+      x: 400,
+      y: 300,
+      scale: 1,
     };
     setDecorations([...decorations, newItem]);
   };

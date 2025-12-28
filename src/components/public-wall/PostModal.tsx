@@ -6,10 +6,10 @@ import ReactionButton from "./ReactionButton";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
-import PostOptionsMenu from "./PostOptionsMenu";
 import { Post } from "./PublicWallGrid";
-import { toPng } from "html-to-image";
+import { domToPng } from "modern-screenshot";
 import { toast } from "sonner";
+import PostOptionsMenu from "./PostOptionsMenu";
 
 
 interface PostModalProps {
@@ -30,11 +30,20 @@ export default function PostModal({ isOpen, onClose, post, currentUserId }: Post
   const handleDownload = async () => {
     if (frontRef.current) {
       try {
-        const dataUrl = await toPng(frontRef.current, {
-          quality: 0.95,
-          pixelRatio: 2,
-          skipFonts: true,
+        // Wait for fonts to load
+        if (document.fonts) {
+          await document.fonts.ready;
+          // Give a small delay to ensure fonts are fully rendered
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        // Use modern-screenshot which supports oklch/lab colors natively
+        const dataUrl = await domToPng(frontRef.current, {
+          scale: 3,
+          quality: 1.0,
+          backgroundColor: '#ffffff',
         });
+
         const link = document.createElement("a");
         link.download = `retrosnap-${post.id}.png`;
         link.href = dataUrl;
