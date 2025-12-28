@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { deletePost } from "@/lib/actions";
 
 interface PostOptionsMenuProps {
     postId: string;
@@ -34,12 +35,10 @@ export default function PostOptionsMenu({
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`/api/posts/${postId}`, {
-                method: "DELETE",
-            });
+            const result = await deletePost(postId);
 
-            if (!response.ok) {
-                throw new Error("Failed to delete post");
+            if (result.error) {
+                throw new Error(result.error);
             }
 
             toast.success("Post deleted successfully");
