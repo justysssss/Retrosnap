@@ -34,7 +34,7 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
 
     // Refs for drag/resize calculations
     const dragStart = useRef({ mouseX: 0, mouseY: 0, itemX: 0, itemY: 0 });
-    const resizeStart = useRef({ mouseX: 0, width: 0, startScale: 1 });
+    const resizeStart = useRef<{ mouseX: number; startScale: number }>({ mouseX: 0, startScale: 1 });
 
     // Update imperatively
     useEffect(() => {
@@ -67,29 +67,8 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
                     x: dragStart.current.itemX + deltaX,
                     y: dragStart.current.itemY + deltaY
                 });
-            } else if (isResizing) {
-                const parent = ref.current?.offsetParent as HTMLElement;
-                // If parent is scaled, we might need to adjust sensitivity, but usually linear is fine for resize
-                // Actually, if the board is zoomed out, 1px of mouse move covers more "board pixels".
-                // But let's stick to simple sensitivity first.
-
-                const deltaX = e.clientX - resizeStart.current.mouseX;
-
-                // We base new scale on the original width + delta
-                const baseWidth = 150;
-                // However, previous logic was: newScale = startScale + delta * 0.01
-                // Let's keep it simple and consistent with previous logic but using refs for start values
-                // Or better: calculate based on visual size change
-
-                // Let's stick to the previous feeling:
-                // each pixel of mouse movement adds a fraction to the scale.
-                const scaleChange = deltaX * 0.005;
-                // Using stored startScale if we had one, but we didn't store it in a ref for this specifically, 
-                // wait, we can just use the current scale state? No, that causes jitter.
-                // We should store startScale in resizeStart.
-
-                // Re-implementing resize logic below in onMouseDown to capture startScale
             }
+            // Note: Resizing is handled in handleResizeMove below
         };
 
         const handleResizeMove = (e: MouseEvent) => {
@@ -173,9 +152,8 @@ export default function DraggableDecoration({ item, isEditMode, onUpdate, onDele
                             setIsDragging(false); // Ensure we don't drag
                             resizeStart.current = {
                                 mouseX: e.clientX,
-                                width: 0, // Unused
-                                startScale: scale // Store current scale
-                            } as any;
+                                startScale: scale
+                            };
                         }}
                     />
                 </>
